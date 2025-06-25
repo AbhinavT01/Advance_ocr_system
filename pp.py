@@ -1,3 +1,4 @@
+#this file is not being used  in this code -. it is used earlier  but now  used a better optiised code in diff file 
 import re
 
 # Sample text from the bank card
