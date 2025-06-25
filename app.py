@@ -3,7 +3,7 @@ import os
 from main import main_file
 from card_detect import extract_info
 from card_detect import extract_text_from_image
-from doc_text_detect import detect_document_text
+from doc_text_detect2 import detect_document_text
 from TableOCR import extract_text_and_generate_csv
 
 app = Flask(__name__)
