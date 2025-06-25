@@ -32,11 +32,6 @@ spell_checker = Speller(lang='en')
 
 # Print the corrected text
 
-# print("Original Text:", textvalue)
-# print("Corrected Text:", corrected_text)
-
-# ////////////////////////////////////////////////////
-# from textblob import TextBlob
 
 
 
