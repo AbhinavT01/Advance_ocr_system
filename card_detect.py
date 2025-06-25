@@ -62,13 +62,13 @@ def extract_info(text):
 
     return info
 
-# Paths to the uploaded images
-image_paths ='./Bank-Cards-Reader/card2.png'
+# # Paths to the uploaded images
+# image_paths ='./Bank-Cards-Reader/card2.png'
 
-# Extracting information from each image
+# # Extracting information from each image
 
-text = extract_text_from_image(image_paths)
-info = extract_info(text)
-print(f"Information extracted from {image_paths}:")
-print(info)
-print("\n")
+# text = extract_text_from_image(image_paths)
+# info = extract_info(text)
+# print(f"Information extracted from {image_paths}:")
+# print(info)
+# print("\n")
