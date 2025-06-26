@@ -94,6 +94,6 @@ def extract_text_by_row_alignment(image_path):
 
 # ------------------ Run Script ------------------
 
-if __name__ == "__main__":
-    test_image_path = "./sample_data/5.png"  # Replace with your test image
-    extract_text_by_row_alignment(test_image_path)
+# if __name__ == "__main__":
+#     test_image_path = "./sample_data/5.png"  # Replace with your test image
+#     extract_text_by_row_alignment(test_image_path)
