@@ -5,7 +5,7 @@ import numpy as np
 import tempfile
 from google.cloud import vision
 
-# ✅ Load GCP credentials securely from environment variable
+# Load GCP credentials securely from environment variable
 service_account_info = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
 if service_account_info:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp:
@@ -82,13 +82,15 @@ def extract_text_and_generate_csv(image_path):
         writer = csv.writer(csvfile)
         current_row = []
         previous_y = cell_data[0][1] if cell_data else 0
+        row_height = 0
 
         for x, y, text in cell_data:
-            if abs(y - previous_y) > 10:  # adjust based on row gap
+            if abs(y - previous_y) > row_height + 10:  # adjust based on row gap
                 writer.writerow(current_row)
                 current_row = []
                 previous_y = y
             current_row.append(text)
+            row_height = max(row_height, abs(y - previous_y))  # Update row height
 
         if current_row:
             writer.writerow(current_row)
@@ -96,7 +98,7 @@ def extract_text_and_generate_csv(image_path):
     print(f"CSV written to: {output_csv_path}")
     return output_csv_path
 
-# # Example usage
+# Example usage
 # if __name__ == "__main__":
 #     img_path = "./tablesample.png"
 #     csv_result = extract_text_and_generate_csv(img_path)
