@@ -4,30 +4,31 @@ import csv
 import cv2
 import numpy as np
 from google.cloud import vision
+from google.oauth2 import service_account
 
-# ✅ Fix: Write JSON credentials from environment variable to file
-creds_content = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_CONTENT")
-if creds_content:
-    with open("gcloud_key.json", "w") as f:
-        f.write(creds_content)
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "gcloud_key.json"
-else:
-    raise EnvironmentError("Missing GOOGLE_APPLICATION_CREDENTIALS_CONTENT environment variable.")
+# ✅ Directly load credentials from hardcoded JSON dict
+credentials_info = {
+  "type": "service_account",
+  "project_id": "aerobic-botany-464022-t6",
+  "private_key_id": "6ac5f02a7707e8251b35ffc296fe5c80c97bb406",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkq...\n-----END PRIVATE KEY-----\n",
+  "client_email": "advanceocr@aerobic-botany-464022-t6.iam.gserviceaccount.com",
+  "client_id": "112282222414363959436",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/advanceocr%40aerobic-botany-464022-t6.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
 
-# Initialize the Google Cloud Vision client
-client = vision.ImageAnnotatorClient()
+credentials = service_account.Credentials.from_service_account_info(credentials_info)
+client = vision.ImageAnnotatorClient(credentials=credentials)
 
 def extract_text_and_generate_csv(image_path):
-    # Load the image
     image = cv2.imread(image_path)
-
-    # Convert the image to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Apply adaptive thresholding to get binary image
     binary = cv2.adaptiveThreshold(~gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, -2)
 
-    # Structure detection
     horizontal = binary.copy()
     vertical = binary.copy()
     scale = 20
@@ -42,18 +43,16 @@ def extract_text_and_generate_csv(image_path):
     vertical = cv2.erode(vertical, verticalStructure)
     vertical = cv2.dilate(vertical, verticalStructure)
 
-    # Combine horizontal and vertical lines
     mask = cv2.add(horizontal, vertical)
     mask = cv2.dilate(mask, np.ones((3, 3), np.uint8))
 
-    # Find contours (cells)
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     cell_data = []
 
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
-        if w > 50 and h > 20:  # filter noise
+        if w > 50 and h > 20:
             cell = image[y:y+h, x:x+w]
             _, encoded_image = cv2.imencode('.jpg', cell)
             content = encoded_image.tobytes()
