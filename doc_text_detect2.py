@@ -1,12 +1,28 @@
 import os
+import json
 from google.cloud import vision
-
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'myservicegapi.json'
+from google.oauth2 import service_account
 
 def detect_document_text(image_path):
     """Detects document text in an image."""
-    # Initialize the client
-    client = vision.ImageAnnotatorClient()
+
+    # Get JSON credentials from environment variable
+    creds_json = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+    if not creds_json:
+        raise EnvironmentError("GOOGLE_APPLICATION_CREDENTIALS_JSON is not set.")
+
+    # Parse the string into a dictionary and restore newlines
+    service_account_info = json.loads(creds_json)
+    service_account_info["private_key"] = service_account_info["private_key"].replace("\\n", "\n")
+
+    # Create credentials object
+    credentials = service_account.Credentials.from_service_account_info(
+        service_account_info,
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
+
+    # Initialize the client with credentials
+    client = vision.ImageAnnotatorClient(credentials=credentials)
 
     # Read the image file
     with open(image_path, 'rb') as image_file:
@@ -17,25 +33,22 @@ def detect_document_text(image_path):
 
     # Perform document text detection
     response = client.document_text_detection(image=image)
+
+    # Check for API errors
+    if response.error.message:
+        raise Exception(f'Google Vision API Error: {response.error.message}')
+
     annotations = response.full_text_annotation
 
-    if annotations:
-        # Return the raw detected text
+    if annotations and annotations.text:
         formatted_text = annotations.text
-
         print('Detected document text:')
         print(formatted_text)
         return formatted_text
     else:
         return 'No document text detected.'
 
-    if response.error.message:
-        raise Exception(f'{response.error.message}')
-
+# For local testing:
 # if __name__ == "__main__":
-
-#     # Path to the image file
 #     image_path = './images1.jpg'
-    
-#     # Detect document text
 #     detect_document_text(image_path)
