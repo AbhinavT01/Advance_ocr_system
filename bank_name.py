@@ -8,7 +8,7 @@ vision_client = vision.ImageAnnotatorClient()
 nlp_client = language_v1.LanguageServiceClient()
 
 # Set Google Cloud credentials environment variable
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'myservicegapi.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'GOOGLE_APPLICATION_CREDENTIALS_CONTENT'
 
 def analyze_entities(text):
     document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
