@@ -1,8 +1,14 @@
 from google.cloud import language_v1
 import os
 
-# Set Google Cloud credentials environment variable
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'GOOGLE_APPLICATION_CREDENTIALS_CONTENT'
+# ✅ Set Google Cloud credentials from environment variable correctly
+creds_json = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_CONTENT")
+if creds_json:
+    with open("google_creds.json", "w") as f:
+        f.write(creds_json)
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "google_creds.json"
+else:
+    raise EnvironmentError("Missing GOOGLE_APPLICATION_CREDENTIALS_CONTENT environment variable.")
 
 def extract_person_names(text):
     client = language_v1.LanguageServiceClient()
@@ -28,17 +34,14 @@ def extract_person_names(text):
                     # Truncate the name to the first three words
                     truncated_name = ' '.join(name_words[:3])
                     person_names = truncated_name
-                elif len(name_words)>1:
+                elif len(name_words) > 1:
                     person_names = entity.name
 
-
                 salience_score = entity.salience
-                
 
     return person_names
 
 # # Example usage
 # text = "KEIRA CHRISTINA KNIGHTLEY 10405 SW 112TH ST MIAMI was the 44th president of the United States. Elon Musk founded SpaceX and co-founded Tesla. John Doe the Driver was on duty. Jane Alice Smith Brown is a scientist."
 # # person_name = extract_person_names(text)
-
 # print("Person with highest salience score:", person_name)
