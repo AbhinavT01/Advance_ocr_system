@@ -7,7 +7,7 @@ from human_detection import extract_person_names
 from human_detection2 import extract_person_names1
 from Address import parse_address
 # Set Google Cloud credentials environment variable
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'myservicegapi.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'GOOGLE_APPLICATION_CREDENTIALS_CONTENT'
 # from visionapi import detect_text
 import cv2
 from patternfile import patterns
