@@ -20,7 +20,6 @@
   <!-- Navbar -->
   <nav class="bg-white dark:bg-gray-800 shadow-md fixed top-0 left-0 w-full z-50 transition-colors duration-300">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <!-- Brand + Toggle -->
       <div class="flex items-center justify-between w-full sm:w-auto">
         <button id="navToggle" class="sm:hidden text-gray-600 dark:text-gray-300 focus:outline-none">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
@@ -35,8 +34,6 @@
           <a href="/bank" class="hover:text-black dark:hover:text-white transition">Bank Card</a>
         </div>
       </div>
-
-      <!-- Clock & Theme Toggle -->
       <div class="flex items-center space-x-4">
         <button id="darkToggle" class="text-sm px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition">
           🌙 Dark
@@ -44,8 +41,6 @@
         <div id="currentTime" class="text-sm bg-green-500 text-white px-3 py-1 rounded shadow"></div>
       </div>
     </div>
-
-    <!-- Mobile Menu -->
     <div id="mobileMenu" class="sm:hidden hidden flex-col px-4 pb-2 space-y-2 text-gray-700 dark:text-gray-300">
       <a href="/" class="block hover:text-black dark:hover:text-white transition">ID Scanner</a>
       <a href="/doc" class="block hover:text-black dark:hover:text-white transition">Doc Scanner</a>
@@ -54,19 +49,20 @@
     </div>
   </nav>
 
-  <!-- Upload Form Container -->
+  <!-- Main Content -->
   <main class="flex-grow flex items-center justify-center pt-28 pb-12 px-4">
-    <div class="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 space-y-6 border border-gray-200 dark:border-gray-700">
-      <h1 class="text-2xl font-bold text-center">Document Uploader</h1>
+    <div class="w-full max-w-xl bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 space-y-6 border border-gray-200 dark:border-gray-700 text-center">
+      <h1 class="text-2xl font-bold">Document Uploader</h1>
+      <p class="text-gray-600 dark:text-gray-300 text-sm sm:text-base max-w-md mx-auto">
+        Effortlessly upload images of documents — including handwritten notes and multilingual texts — for automatic extraction and analysis using advanced OCR technology. Our system supports diverse languages and handwriting styles to help you digitize and manage your documents with ease and accuracy.
+      </p>
 
       <form action="/uploaddoc" method="post" enctype="multipart/form-data" id="uploadForm" class="space-y-6">
-        <!-- File Upload -->
         <label for="fileInput" class="block border-2 border-dashed border-blue-400 p-6 rounded-md text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-center transition">
           <i class="fas fa-folder-open mr-2"></i> Choose Document Image
           <input type="file" name="file" id="fileInput" accept="image/*" required class="hidden">
         </label>
 
-        <!-- Preview -->
         <div id="imagePreviewContainer" class="hidden">
           <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-2 text-center">Document Preview</h3>
           <div id="previewWrapper" class="mx-auto rounded overflow-hidden border border-gray-300 dark:border-gray-600 shadow max-h-96">
@@ -74,7 +70,6 @@
           </div>
         </div>
 
-        <!-- Upload Button -->
         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition">
           <i class="fas fa-upload mr-2"></i> Upload
         </button>
@@ -87,9 +82,8 @@
     OCR &copy; 2025
   </footer>
 
-  <!-- JavaScript -->
+  <!-- Scripts -->
   <script>
-    // Image Preview
     document.getElementById('fileInput').addEventListener('change', function () {
       const file = this.files[0];
       const preview = document.getElementById('imagePreview');
@@ -106,7 +100,6 @@
       }
     });
 
-    // Clock
     const currentTimeElement = document.getElementById('currentTime');
     function updateTime() {
       const now = new Date();
@@ -115,17 +108,12 @@
     updateTime();
     setInterval(updateTime, 1000);
 
-    // Navbar toggle
-    const navToggle = document.getElementById('navToggle');
-    const mobileMenu = document.getElementById('mobileMenu');
-    navToggle.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
+    document.getElementById('navToggle').addEventListener('click', () => {
+      document.getElementById('mobileMenu').classList.toggle('hidden');
     });
 
-    // Dark mode toggle
     const html = document.documentElement;
     const toggleBtn = document.getElementById('darkToggle');
-
     function setDarkMode(enabled) {
       if (enabled) {
         html.classList.add('dark');
@@ -137,12 +125,9 @@
         localStorage.setItem('theme', 'light');
       }
     }
-
     toggleBtn.addEventListener('click', () => {
       setDarkMode(!html.classList.contains('dark'));
     });
-
-    // Load saved theme on page load
     if (localStorage.getItem('theme') === 'dark') {
       setDarkMode(true);
     }
