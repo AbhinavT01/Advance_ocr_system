@@ -5,8 +5,8 @@ import cv2
 import numpy as np
 from google.cloud import vision
 
-# ✅ Fix: Convert service account JSON content from env var to a temporary file
-creds_content = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS_CONTENT')
+# ✅ Fix: Write JSON credentials from environment variable to file
+creds_content = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_CONTENT")
 if creds_content:
     with open("gcloud_key.json", "w") as f:
         f.write(creds_content)
