@@ -1,7 +1,7 @@
 import os
 from google.cloud import vision
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'myservicegapi.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'GOOGLE_APPLICATION_CREDENTIALS_CONTENT'
 
 def detect_document_text(image_path):
     """Detects document text in an image."""
