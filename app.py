@@ -72,20 +72,30 @@ def upload_doc():
 def upload_bank():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
-    
+
     file = request.files['file']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
-    
+
     if file:
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
 
-        # Process the image
-        text = extract_text_from_image(file_path)
-        processed_text = extract_info(text)
+        try:
+            # ✅ Setup Google clients
+            vision_client = setup_google_vision_client()
+            nlp_client = setup_google_nlp_client()
+
+            # ✅ Extract text using OCR
+            text = extract_text_from_image(file_path, vision_client)
+
+            # ✅ Extract structured info
+            processed_text = extract_info(text, nlp_client)
+
+            return render_template('resultbank.html', result=processed_text)
         
-        return render_template('resultbank.html', result=processed_text)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
 @app.route('/uploadtable', methods=['POST'])
 def upload_table():
