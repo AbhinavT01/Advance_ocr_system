@@ -1,7 +1,14 @@
 import os
 from google.cloud import vision
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'GOOGLE_APPLICATION_CREDENTIALS_CONTENT'
+# ✅ Correctly load credentials from environment variable and write to file
+creds_json = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_CONTENT")
+if creds_json:
+    with open("google_creds.json", "w") as f:
+        f.write(creds_json)
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "google_creds.json"
+else:
+    raise EnvironmentError("Missing GOOGLE_APPLICATION_CREDENTIALS_CONTENT environment variable.")
 
 def detect_document_text(image_path):
     """Detects document text in an image."""
@@ -33,9 +40,7 @@ def detect_document_text(image_path):
         raise Exception(f'{response.error.message}')
 
 # if __name__ == "__main__":
-
 #     # Path to the image file
 #     image_path = './images1.jpg'
-    
 #     # Detect document text
 #     detect_document_text(image_path)
