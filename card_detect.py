@@ -43,38 +43,38 @@ def setup_google_nlp_client():
 
 # ------------------ OCR Function ------------------
 
-def extract_text_from_image(image_path):
+def extract_text_from_image(image_path, vision_client):
+    """
+    Uses Google Vision client to extract text from image.
+    """
     with open(image_path, 'rb') as image_file:
         content = image_file.read()
     image = vision.Image(content=content)
-    response = client.text_detection(image=image)
+    response = vision_client.text_detection(image=image)
     texts = response.text_annotations
     if response.error.message:
         raise Exception(f'{response.error.message}')
     return texts[0].description if texts else ""
 
-
 # ------------------ Info Extraction ------------------
 
-def extract_info(text):
-    info = {}
-
-    # Extracting information
-    info['Card Number'] = re.findall(card_number_pattern, text)
-    info['Expiry Date'] = re.findall(expiry_date_pattern, text)
-    # info['Bank Name'] = re.findall(bank_name_pattern, text)
-    nlp_client = language_v1.LanguageServiceClient()
-    info['Bank Name'] = analyze_entities(text,nlp_client)
-    
-    info['Card Type'] = re.findall(card_type_pattern, text)
-    info['Card Holder Name'] =extract_person_names(text) 
-
+def extract_info(text, nlp_client):
+    """
+    Extracts card details from OCR'd text using regex and NLP.
+    """
+    info = {
+        'Card Number': re.findall(card_number_pattern, text),
+        'Expiry Date': re.findall(expiry_date_pattern, text),
+        'Bank Name': analyze_entities(text, nlp_client),  # NLP-based extraction
+        'Card Type': re.findall(card_type_pattern, text),
+        'Card Holder Name': extract_person_names(text)
+    }
     return info
 
-# ------------------ Main Test ------------------
+# ------------------ Example Usage (Optional Test) ------------------
 
 # if __name__ == "__main__":
-#     image_path = "./Bank-Cards-Reader/card2.png"  # Test path
+#     image_path = "./Bank-Cards-Reader/card2.png"
 
 #     try:
 #         print("🔐 Setting up credentials...")
