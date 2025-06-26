@@ -82,7 +82,8 @@ def upload_bank():
         file.save(file_path)
 
         # Process the image
-        processed_text = extract_info(file_path)
+        text = extract_text_from_image(file_path)
+        processed_text = extract_info(text)
         
         return render_template('resultbank.html', result=processed_text)
 
