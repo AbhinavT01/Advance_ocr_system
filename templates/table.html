@@ -27,8 +27,6 @@
             <path d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
         </button>
-
-        <!-- Links -->
         <div id="navLinks" class="hidden sm:flex space-x-6 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300">
           <a href="/" class="hover:text-black dark:hover:text-white transition">ID Scanner</a>
           <a href="/doc" class="hover:text-black dark:hover:text-white transition">Doc Scanner</a>
@@ -36,8 +34,6 @@
           <a href="/bank" class="hover:text-black dark:hover:text-white transition">Bank Card</a>
         </div>
       </div>
-
-      <!-- Clock + Dark Toggle -->
       <div class="flex items-center gap-4">
         <button id="darkToggle" class="text-sm px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition">
           🌙 Dark
@@ -45,8 +41,6 @@
         <div id="currentTime" class="text-sm bg-green-500 text-white px-3 py-1 rounded shadow"></div>
       </div>
     </div>
-
-    <!-- Mobile Menu -->
     <div id="mobileMenu" class="sm:hidden hidden px-4 pb-3 space-y-2 text-gray-700 dark:text-gray-300">
       <a href="/" class="block hover:text-black dark:hover:text-white">ID Scanner</a>
       <a href="/doc" class="block hover:text-black dark:hover:text-white">Doc Scanner</a>
@@ -59,25 +53,22 @@
   <main class="pt-28 px-4 pb-16 max-w-xl mx-auto w-full">
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md p-8 space-y-6">
       <h1 class="text-2xl font-bold text-center">Tabular Data Uploader</h1>
+      <p class="text-gray-600 dark:text-gray-300 text-sm sm:text-base text-center max-w-md mx-auto">
+        Upload scanned images of tables from receipts, documents, or forms. Our intelligent OCR engine aligns handwritten and printed tabular data into clean CSV-like structures, even if the text is multilingual or unevenly placed. Perfect for extracting structured information from complex layouts.
+      </p>
 
       <!-- Upload Form -->
       <form action="/uploadtable" method="post" enctype="multipart/form-data" id="uploadForm" class="space-y-6">
-        
-        <!-- File Upload -->
         <label for="fileInput" class="block border-2 border-dashed border-blue-400 p-6 rounded-md text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-center transition">
           <i class="fas fa-folder-open mr-2"></i> Choose Tabular Data Image
           <input type="file" name="file" id="fileInput" accept="image/*" required class="hidden">
         </label>
-
-        <!-- Image Preview -->
         <div id="imagePreviewContainer" class="hidden">
           <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-2 text-center">Preview</h3>
           <div class="max-h-96 overflow-hidden rounded border shadow">
             <img id="imagePreview" src="#" alt="Preview" class="w-full object-contain" />
           </div>
         </div>
-
-        <!-- Upload Button -->
         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition">
           <i class="fas fa-upload mr-2"></i> Upload
         </button>
@@ -92,7 +83,6 @@
 
   <!-- JavaScript -->
   <script>
-    // Image Preview
     const fileInput = document.getElementById('fileInput');
     const imagePreview = document.getElementById('imagePreview');
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
@@ -110,7 +100,6 @@
       }
     });
 
-    // Clock
     const currentTimeElement = document.getElementById('currentTime');
     function updateTime() {
       const now = new Date();
@@ -119,12 +108,10 @@
     updateTime();
     setInterval(updateTime, 1000);
 
-    // Mobile nav toggle
     document.getElementById('navToggle').addEventListener('click', () => {
       document.getElementById('mobileMenu').classList.toggle('hidden');
     });
 
-    // Dark mode toggle
     const html = document.documentElement;
     const darkToggle = document.getElementById('darkToggle');
     function setDarkMode(enable) {
