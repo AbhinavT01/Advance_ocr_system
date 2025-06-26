@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, send_from_directory, jsonify, url_forMore actions
+from flask import Flask, request, render_template, send_from_directory, jsonify, url_for
 import os
 from main import main_file
 from card_detect import (
