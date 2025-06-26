@@ -5,7 +5,7 @@ from google.cloud import vision
 import os
 
 def extract_text_and_generate_csv(image_path):
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'myservicegapi.json'
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'GOOGLE_APPLICATION_CREDENTIALS_CONTENT'
     
     # Initialize the Google Cloud Vision client
     client = vision.ImageAnnotatorClient()
