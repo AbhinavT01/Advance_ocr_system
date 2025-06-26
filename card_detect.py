@@ -64,7 +64,7 @@ def extract_text_from_image(image_path, vision_client):
 
 # ------------------ Info Extraction ------------------
 
-def extract_info(text, nlp_client):
+def extract_info(text):
     """
     Extracts card-related info from OCR'd text using regex + NLP.
     """
