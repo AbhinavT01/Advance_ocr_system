@@ -20,12 +20,11 @@
   <!-- Navbar -->
   <nav class="bg-white dark:bg-gray-800 shadow-md fixed top-0 left-0 w-full z-50 transition-colors duration-300">
     <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-      <!-- Left: Logo + Links -->
       <div class="flex items-center">
-        <button id="navToggle" class="sm:hidden text-gray-700 dark:text-gray-300 focus:outline-none mr-4">
+        <button id="navToggle" class="sm:hidden text-gray-600 dark:text-gray-300 mr-4 focus:outline-none">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
                viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 6h16M4 12h16M4 18h16"/>
+            <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
         <div id="navLinks" class="hidden sm:flex space-x-6 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300">
@@ -35,7 +34,6 @@
           <a href="/bank" class="hover:text-black dark:hover:text-white transition">Bank Card</a>
         </div>
       </div>
-      <!-- Right: Theme Toggle + Time -->
       <div class="flex items-center gap-4">
         <button id="darkToggle" class="text-sm px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition">
           🌙 Dark
@@ -43,7 +41,6 @@
         <div id="currentTime" class="text-sm bg-green-500 text-white px-3 py-1 rounded shadow"></div>
       </div>
     </div>
-    <!-- Mobile Nav Menu -->
     <div id="mobileMenu" class="sm:hidden hidden px-4 pb-3 space-y-2 text-gray-700 dark:text-gray-300">
       <a href="/" class="block hover:text-black dark:hover:text-white">ID Scanner</a>
       <a href="/doc" class="block hover:text-black dark:hover:text-white">Doc Scanner</a>
@@ -73,12 +70,11 @@
       <!-- Image Preview -->
       <div id="imageContainer" class="hidden text-center">
         <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Image:</label>
-        <img id="image-preview" src="#" alt="Image Preview"
-             class="mx-auto rounded border max-w-xs max-h-64 object-contain shadow" />
+        <img id="image-preview" src="#" alt="Image Preview" class="mx-auto rounded border max-w-xs max-h-64 object-contain shadow" />
       </div>
 
       <!-- Table Results -->
-      <div class="overflow-x-auto">
+      <div id="resultContainer" class="overflow-x-auto">
         <table class="w-full border border-gray-300 dark:border-gray-700 rounded-md text-sm">
           <thead>
             <tr class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white">
@@ -89,7 +85,7 @@
           <tbody>
             {% for key, value in result.items() %}
             {% if value %}
-            <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+            <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition" data-field="{{ key }}" data-value="{{ value }}">
               <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-600">{{ key }}</td>
               <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-600">{{ value }}</td>
             </tr>
@@ -99,12 +95,11 @@
         </table>
       </div>
 
-      <!-- CSV Download Button -->
+      <!-- Download CSV Button -->
       <div class="text-center">
-        <a href="{{ csv_url }}" download="bank_card_result.csv"
-           class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow transition">
+        <button onclick="downloadCSV()" class="mt-6 bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2 rounded-md transition">
           ⬇️ Download CSV
-        </a>
+        </button>
       </div>
     </div>
   </main>
@@ -116,35 +111,32 @@
 
   <!-- JavaScript -->
   <script>
-    // Live Time
+    // Clock
     const currentTimeElement = document.getElementById('currentTime');
     function updateTime() {
       const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      const s = String(now.getSeconds()).padStart(2, '0');
-      currentTimeElement.textContent = `${h}:${m}:${s}`;
+      currentTimeElement.textContent = now.toLocaleTimeString('en-GB');
     }
     updateTime();
     setInterval(updateTime, 1000);
 
-    // Toggle image preview
+    // Toggle Image Preview
     document.getElementById('togglePreview').addEventListener('click', () => {
       document.getElementById('imageContainer').classList.toggle('hidden');
     });
 
-    // Load stored image
+    // Restore image from localStorage
     const storedImage = localStorage.getItem('uploadedImage');
     if (storedImage) {
       document.getElementById('image-preview').src = storedImage;
     }
 
-    // Toggle mobile nav
+    // Navbar toggle
     document.getElementById('navToggle').addEventListener('click', () => {
       document.getElementById('mobileMenu').classList.toggle('hidden');
     });
 
-    // Dark mode toggle
+    // Dark Mode Toggle
     const html = document.documentElement;
     const darkToggle = document.getElementById('darkToggle');
     function setDarkMode(enabled) {
@@ -164,6 +156,31 @@
     });
     if (localStorage.getItem('theme') === 'dark') {
       setDarkMode(true);
+    }
+
+    // CSV Download
+    function downloadCSV() {
+      const rows = [['Field', 'Value']];
+      const tableRows = document.querySelectorAll('#resultContainer tbody tr');
+      tableRows.forEach(row => {
+        const field = row.getAttribute('data-field') || '';
+        const value = row.getAttribute('data-value') || '';
+        rows.push([field, value]);
+      });
+
+      const csvContent = rows.map(e =>
+        e.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',')
+      ).join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      const now = new Date().toISOString().split('T')[0];
+      link.setAttribute('download', `bank_card_result_${now}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   </script>
 </body>
