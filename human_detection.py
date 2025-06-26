@@ -2,7 +2,7 @@ from google.cloud import language_v1
 import os
 
 # Set Google Cloud credentials environment variable
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'myservicegapi.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'GOOGLE_APPLICATION_CREDENTIALS_CONTENT'
 
 def extract_person_names(text):
     client = language_v1.LanguageServiceClient()
