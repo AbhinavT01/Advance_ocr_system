@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ID Card Uploader</title>
+  <title>OCR Document Scanner</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <style>
@@ -20,64 +20,83 @@
   <!-- Navbar -->
   <nav class="fixed top-0 left-0 w-full bg-white dark:bg-gray-800 shadow z-50 transition-colors duration-300">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <!-- Left: Brand + Toggle -->
       <div class="flex items-center justify-between w-full sm:w-auto">
         <button id="navToggle" class="sm:hidden text-gray-600 dark:text-gray-300 focus:outline-none">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
-               viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+               stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
         <div id="navLinks" class="hidden sm:flex space-x-6 ml-4 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300">
-          <a href="/" class="hover:text-black dark:hover:text-white transition">Home</a>
+          <a href="/" class="hover:text-black dark:hover:text-white transition">ID Scanner</a>
           <a href="/doc" class="hover:text-black dark:hover:text-white transition">Doc Scanner</a>
           <a href="/table" class="hover:text-black dark:hover:text-white transition">Table Scan</a>
           <a href="/bank" class="hover:text-black dark:hover:text-white transition">Bank Card</a>
         </div>
       </div>
-      <!-- Right: Clock + Dark Mode -->
       <div class="flex items-center space-x-4">
-        <button id="darkToggle" class="text-sm px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition">
-          🌙 Dark
-        </button>
+        <button id="darkToggle" class="text-sm px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition">🌙 Dark</button>
         <div id="currentTime" class="text-sm bg-green-500 text-white px-3 py-1 rounded shadow ml-4 sm:ml-0 mt-2 sm:mt-0"></div>
       </div>
     </div>
-
-    <!-- Mobile Nav -->
     <div id="mobileMenu" class="sm:hidden hidden flex-col px-4 pb-3 space-y-2 text-gray-700 dark:text-gray-300">
-      <a href="/" class="block hover:text-black dark:hover:text-white">Home</a>
+      <a href="/" class="block hover:text-black dark:hover:text-white">ID Scanner</a>
       <a href="/doc" class="block hover:text-black dark:hover:text-white">Doc Scanner</a>
       <a href="/table" class="block hover:text-black dark:hover:text-white">Table Scan</a>
       <a href="/bank" class="block hover:text-black dark:hover:text-white">Bank Card</a>
     </div>
   </nav>
 
-  <!-- Main Content -->
-  <main class="flex-grow flex items-center justify-center pt-28 pb-20 px-4">
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-8 w-full max-w-xl space-y-6 text-center">
-      <h1 class="text-2xl font-bold">ID Card Uploader</h1>
+  <!-- Hero and ID Upload Section -->
+  <main class="pt-28 pb-20 px-4">
+    <section class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+      <!-- Text Section -->
+      <div class="space-y-6 text-center md:text-left">
+        <h1 class="text-4xl font-extrabold">OCR & Document Intelligence</h1>
+        <p class="text-lg text-gray-700 dark:text-gray-300">
+          This smart OCR web app extracts structured data from your images – whether it's an ID card, bank card, scanned document, or a table.
+        </p>
+        <ul class="list-disc text-left pl-6 text-gray-600 dark:text-gray-300">
+          <li>🪪 Extract details from ID Cards</li>
+          <li>📄 Scan documents for full text</li>
+          <li>📊 Convert tables into Excel/CSV</li>
+          <li>💳 Parse bank card holder info</li>
+        </ul>
+      </div>
 
-      <form action="/uploadid" method="post" enctype="multipart/form-data" class="space-y-6">
-        <!-- File Upload -->
-        <label for="fileInput" class="block border-2 border-dashed border-blue-400 p-6 rounded-md text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition">
-          <i class="fas fa-folder-open mr-2"></i> Choose ID Card Image
-          <input type="file" id="fileInput" name="file" accept="image/*" required class="hidden">
-        </label>
+      <!-- Image Section -->
+      <div class="text-center">
+        <img src="{{ url_for('static', filename='images/hero-ocr.png') }}" alt="OCR Illustration"
+             class="w-full max-w-md mx-auto rounded-lg shadow-xl object-contain">
+      </div>
+    </section>
 
-        <!-- Preview -->
-        <div id="imagePreviewContainer" class="hidden">
-          <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-2">Image Preview</h3>
-          <div class="max-h-96 overflow-hidden rounded border border-gray-300 dark:border-gray-600">
-            <img id="imagePreview" src="#" alt="Preview" class="w-full object-contain">
+    <!-- ID Card Upload Form -->
+    <div class="mt-16 flex justify-center">
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-8 w-full max-w-xl space-y-6 text-center">
+        <h2 class="text-2xl font-bold">ID Card Uploader</h2>
+
+        <form action="/uploadid" method="post" enctype="multipart/form-data" class="space-y-6">
+          <!-- File Upload -->
+          <label for="fileInput" class="block border-2 border-dashed border-blue-400 p-6 rounded-md text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition">
+            <i class="fas fa-folder-open mr-2"></i> Choose ID Card Image
+            <input type="file" id="fileInput" name="file" accept="image/*" required class="hidden">
+          </label>
+
+          <!-- Preview -->
+          <div id="imagePreviewContainer" class="hidden">
+            <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-2">Image Preview</h3>
+            <div class="max-h-96 overflow-hidden rounded border border-gray-300 dark:border-gray-600">
+              <img id="imagePreview" src="#" alt="Preview" class="w-full object-contain">
+            </div>
           </div>
-        </div>
 
-        <!-- Submit -->
-        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-md transition">
-          <i class="fas fa-upload mr-2"></i> Upload
-        </button>
-      </form>
+          <!-- Submit -->
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-md transition">
+            <i class="fas fa-upload mr-2"></i> Upload
+          </button>
+        </form>
+      </div>
     </div>
   </main>
 
@@ -88,7 +107,7 @@
 
   <!-- Scripts -->
   <script>
-    // Image Preview
+    // Preview
     document.getElementById('fileInput').addEventListener('change', function () {
       const file = this.files[0];
       const preview = document.getElementById('imagePreview');
@@ -99,7 +118,6 @@
         reader.onload = function (e) {
           preview.src = e.target.result;
           container.classList.remove('hidden');
-          localStorage.setItem('uploadedImage', e.target.result);
         };
         reader.readAsDataURL(file);
       }
@@ -114,15 +132,9 @@
     updateTime();
     setInterval(updateTime, 1000);
 
-    // Mobile Nav Toggle
-    document.getElementById('navToggle').addEventListener('click', () => {
-      document.getElementById('mobileMenu').classList.toggle('hidden');
-    });
-
-    // Dark Mode Toggle
+    // Dark mode
     const html = document.documentElement;
     const darkToggle = document.getElementById('darkToggle');
-
     function setDarkMode(enable) {
       if (enable) {
         html.classList.add('dark');
@@ -134,16 +146,18 @@
         localStorage.setItem('theme', 'light');
       }
     }
-
     darkToggle.addEventListener('click', () => {
       const isDark = html.classList.contains('dark');
       setDarkMode(!isDark);
     });
-
-    // Load theme
     if (localStorage.getItem('theme') === 'dark') {
       setDarkMode(true);
     }
+
+    // Mobile Menu
+    document.getElementById('navToggle').addEventListener('click', () => {
+      document.getElementById('mobileMenu').classList.toggle('hidden');
+    });
   </script>
 </body>
 </html>
