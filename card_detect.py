@@ -1,11 +1,11 @@
 import os
 import re
-from google.cloud import vision
 import cv2
-import pytesseract as tes
 from PIL import Image
-import imquality.brisque as brisque
+from google.cloud import vision
+import pytesseract as tes
 from skimage import io, img_as_float
+import imquality.brisque as brisque
 from human_detection import extract_person_names
 from bank_name import analyze_entities
 
