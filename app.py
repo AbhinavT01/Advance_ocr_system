@@ -40,7 +40,7 @@ app.config['OUTPUT_FOLDER'] = 'uploads/outputcsv'
 
 @app.route('/')
 def index():
-@@ -53,81 +36,80 @@
+# @@ -53,81 +36,80 @@
 def upload_image():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
