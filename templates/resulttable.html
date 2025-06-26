@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Processed Bank Card</title>
+  <title>Tabular Data Processed</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <style>
     .dark .dark\:bg-gray-900 { background-color: #1a202c; }
     .dark .dark\:bg-gray-800 { background-color: #2d3748; }
@@ -15,27 +14,27 @@
     .dark .dark\:border-gray-600 { border-color: #4b5563; }
   </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white min-h-screen font-sans flex flex-col transition-colors duration-300">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white font-sans min-h-screen flex flex-col transition-colors duration-300">
 
   <!-- Navbar -->
-  <nav class="bg-white dark:bg-gray-800 shadow-md fixed top-0 left-0 w-full z-50 transition-colors duration-300">
+  <nav class="bg-white dark:bg-gray-800 shadow-md fixed top-0 left-0 w-full z-50">
     <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-      <!-- Left: Logo + Links -->
+      <!-- Left: Toggle & Links -->
       <div class="flex items-center">
-        <button id="navToggle" class="sm:hidden text-gray-700 dark:text-gray-300 focus:outline-none mr-4">
+        <button id="navToggle" class="sm:hidden mr-4 text-gray-700 dark:text-gray-300 focus:outline-none">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
                viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
         </button>
         <div id="navLinks" class="hidden sm:flex space-x-6 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300">
-          <a href="/" class="hover:text-black dark:hover:text-white transition">ID Scanner</a>
+          <a href="/" class="hover:text-black dark:hover:text-white transition">Home</a>
           <a href="/doc" class="hover:text-black dark:hover:text-white transition">Doc Scanner</a>
           <a href="/table" class="hover:text-black dark:hover:text-white transition">Table Scan</a>
           <a href="/bank" class="hover:text-black dark:hover:text-white transition">Bank Card</a>
         </div>
       </div>
-      <!-- Right: Theme Toggle + Time -->
+      <!-- Right: Clock + Dark Toggle -->
       <div class="flex items-center gap-4">
         <button id="darkToggle" class="text-sm px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition">
           🌙 Dark
@@ -43,9 +42,9 @@
         <div id="currentTime" class="text-sm bg-green-500 text-white px-3 py-1 rounded shadow"></div>
       </div>
     </div>
-    <!-- Mobile Nav Menu -->
+    <!-- Mobile Menu -->
     <div id="mobileMenu" class="sm:hidden hidden px-4 pb-3 space-y-2 text-gray-700 dark:text-gray-300">
-      <a href="/" class="block hover:text-black dark:hover:text-white">ID Scanner</a>
+      <a href="/" class="block hover:text-black dark:hover:text-white">Home</a>
       <a href="/doc" class="block hover:text-black dark:hover:text-white">Doc Scanner</a>
       <a href="/table" class="block hover:text-black dark:hover:text-white">Table Scan</a>
       <a href="/bank" class="block hover:text-black dark:hover:text-white">Bank Card</a>
@@ -53,8 +52,8 @@
   </nav>
 
   <!-- Main Content -->
-  <main class="pt-28 pb-12 px-4 max-w-5xl mx-auto w-full flex-grow">
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6 space-y-6">
+  <main class="pt-28 px-4 pb-12 max-w-2xl mx-auto w-full flex-grow">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md rounded-lg p-6 space-y-6">
 
       <!-- Back Button -->
       <div>
@@ -63,92 +62,71 @@
         </button>
       </div>
 
-      <!-- Toggle Image Button -->
+      <!-- Toggle Image Preview -->
       <div class="text-center">
-        <button id="togglePreview" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md transition">
+        <button id="togglePreview" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded transition">
           Toggle Image Preview
         </button>
       </div>
 
       <!-- Image Preview -->
       <div id="imageContainer" class="hidden text-center">
-        <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Image:</label>
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Image Preview:</label>
         <img id="image-preview" src="#" alt="Image Preview"
-             class="mx-auto rounded border max-w-xs max-h-64 object-contain shadow" />
+             class="mx-auto border rounded max-w-xs max-h-64 object-contain shadow" />
       </div>
 
-      <!-- Table Results -->
-      <div class="overflow-x-auto">
-        <table class="w-full border border-gray-300 dark:border-gray-700 rounded-md text-sm">
-          <thead>
-            <tr class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white">
-              <th class="px-4 py-2 border-b text-left">Field</th>
-              <th class="px-4 py-2 border-b text-left">Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for key, value in result.items() %}
-            {% if value %}
-            <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-              <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-600">{{ key }}</td>
-              <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-600">{{ value }}</td>
-            </tr>
-            {% endif %}
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      <!-- CSV Download Button -->
+      <!-- Download CSV -->
       <div class="text-center">
-        <a href="{{ csv_url }}" download="bank_card_result.csv"
+        <a id="downloadLink"
+           href="{{ csv_url }}"
+           download="output.csv"
            class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow transition">
-          ⬇️ Download CSV
+          Download CSV
         </a>
       </div>
     </div>
   </main>
 
   <!-- Footer -->
-  <footer class="bg-white dark:bg-gray-800 shadow-inner py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+  <footer class="text-center py-4 text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 shadow-inner mt-auto">
     OCR &copy; 2025
   </footer>
 
   <!-- JavaScript -->
   <script>
-    // Live Time
+    // Live Clock
     const currentTimeElement = document.getElementById('currentTime');
     function updateTime() {
       const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      const s = String(now.getSeconds()).padStart(2, '0');
-      currentTimeElement.textContent = `${h}:${m}:${s}`;
+      currentTimeElement.textContent = now.toLocaleTimeString('en-GB');
     }
     updateTime();
     setInterval(updateTime, 1000);
 
-    // Toggle image preview
-    document.getElementById('togglePreview').addEventListener('click', () => {
-      document.getElementById('imageContainer').classList.toggle('hidden');
+    // Image Preview Toggle
+    const toggleButton = document.getElementById('togglePreview');
+    const imageContainer = document.getElementById('imageContainer');
+    toggleButton.addEventListener('click', () => {
+      imageContainer.classList.toggle('hidden');
     });
 
-    // Load stored image
+    // Load Image from localStorage
     const storedImage = localStorage.getItem('uploadedImage');
     if (storedImage) {
       document.getElementById('image-preview').src = storedImage;
     }
 
-    // Toggle mobile nav
+    // Mobile Nav Toggle
     document.getElementById('navToggle').addEventListener('click', () => {
       document.getElementById('mobileMenu').classList.toggle('hidden');
     });
 
-    // Dark mode toggle
+    // Dark Mode Toggle
     const html = document.documentElement;
     const darkToggle = document.getElementById('darkToggle');
-    function setDarkMode(enabled) {
-      if (enabled) {
+    function setDarkMode(enable) {
+      if (enable) {
         html.classList.add('dark');
         darkToggle.textContent = '☀️ Light';
         localStorage.setItem('theme', 'dark');
@@ -159,8 +137,7 @@
       }
     }
     darkToggle.addEventListener('click', () => {
-      const isDark = html.classList.contains('dark');
-      setDarkMode(!isDark);
+      setDarkMode(!html.classList.contains('dark'));
     });
     if (localStorage.getItem('theme') === 'dark') {
       setDarkMode(true);
