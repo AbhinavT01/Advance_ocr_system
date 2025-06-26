@@ -1,33 +1,32 @@
 import os
 import re
-import atexit
-import json
 from google.cloud import vision
 from google.cloud import language_v1
+from google.oauth2 import service_account
 
-# ✅ Step 1: Read JSON credentials content from environment variable
-creds_json_content = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_CONTENT")
-creds_file_path = "google_creds.json"
+# ✅ Step 1: Directly embed the JSON credentials
+credentials_info = {
+  "type": "service_account",
+  "project_id": "aerobic-botany-464022-t6",
+  "private_key_id": "6ac5f02a7707e8251b35ffc296fe5c80c97bb406",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC8V5kX0oF5bpad\n...\n-----END PRIVATE KEY-----\n",
+  "client_email": "advanceocr@aerobic-botany-464022-t6.iam.gserviceaccount.com",
+  "client_id": "112282222414363959436",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/advanceocr%40aerobic-botany-464022-t6.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
 
-if creds_json_content:
-    # ✅ Step 2: Write to a temporary file
-    with open(creds_file_path, "w") as f:
-        f.write(creds_json_content)
-    
-    # ✅ Step 3: Point GOOGLE_APPLICATION_CREDENTIALS to the file
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = creds_file_path
+# ✅ Step 2: Create credentials object
+credentials = service_account.Credentials.from_service_account_info(credentials_info)
 
-    # ✅ Step 4 (optional): Auto-delete temp creds file on exit
-    atexit.register(lambda: os.remove(creds_file_path) if os.path.exists(creds_file_path) else None)
-else:
-    raise EnvironmentError("Missing GOOGLE_APPLICATION_CREDENTIALS_CONTENT environment variable.")
+# ✅ Step 3: Initialize clients with embedded credentials
+vision_client = vision.ImageAnnotatorClient(credentials=credentials)
+nlp_client = language_v1.LanguageServiceClient(credentials=credentials)
 
-# ✅ Step 5: Initialize Google Cloud clients
-vision_client = vision.ImageAnnotatorClient()
-nlp_client = language_v1.LanguageServiceClient()
-
-
-# ✅ Function to extract ORGANIZATION (e.g., Bank) names from text using NLP
+# ✅ Function to extract ORGANIZATION (e.g., Bank) names using NLP
 def analyze_entities(text):
     document = language_v1.Document(
         content=text,
@@ -41,7 +40,6 @@ def analyze_entities(text):
             bank_names.append(entity.name)
 
     return sorted(set(bank_names))
-
 
 # # ✅ Example Usage
 # if __name__ == "__main__":
