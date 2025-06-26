@@ -1,8 +1,10 @@
 from flask import Flask, request, render_template, send_from_directory, jsonify, url_for
+from card_detect import extract_info, extract_text_from_image, setup_google_vision_client, setup_google_nlp_client
+
 import os
 from main import main_file
-from card_detect import extract_info
-from card_detect import extract_text_from_image
+# from card_detect import extract_info
+# from card_detect import extract_text_from_image
 from doc_text_detect import detect_document_text
 from TableOCR import extract_text_and_generate_csv
 
