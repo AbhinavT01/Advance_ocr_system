@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Processed License Card</title>
+  <title>Processed Document </title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <style>
@@ -77,6 +77,13 @@
           <label for="completeResult" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Complete Result:</label>
           <textarea id="completeResult" name="completeResult" rows="10"
             class="w-full border border-gray-300 dark:border-gray-700 rounded-md p-3 bg-gray-50 dark:bg-gray-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500">{{ result }}</textarea>
+          
+          <!-- Copy Button -->
+          <div class="mt-2 text-right">
+            <button type="button" id="copyButton" class="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow text-sm transition">
+              📋 Copy
+            </button>
+          </div>
         </div>
 
         <!-- Download Button -->
@@ -155,6 +162,16 @@
     if (localStorage.getItem('theme') === 'dark') {
       setDarkMode(true);
     }
+
+    // Copy to Clipboard
+    document.getElementById('copyButton').addEventListener('click', function () {
+      const textarea = document.getElementById('completeResult');
+      textarea.select();
+      textarea.setSelectionRange(0, 99999); // Mobile support
+      document.execCommand('copy');
+      this.textContent = '✅ Copied!';
+      setTimeout(() => this.textContent = '📋 Copy', 1500);
+    });
   </script>
 </body>
 </html>
