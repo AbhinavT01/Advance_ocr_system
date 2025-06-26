@@ -1,54 +1,63 @@
 import os
 import json
+import tempfile
 from google.cloud import vision
-from google.oauth2 import service_account
 
+# Step 1: Load service account JSON from environment variable
+service_account_info = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+
+# Step 2: Write it to a temporary file so Google client libraries can use it
+if service_account_info:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp:
+        temp.write(service_account_info.encode())
+        temp_path = temp.name
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_path
+else:
+    raise EnvironmentError("GOOGLE_SERVICE_ACCOUNT_JSON environment variable not set!")
+
+# Step 3: Define OCR function
 def detect_document_text(image_path):
-    """Detects document text in an image."""
+    """
+    Detects text from a document-style image using Google Vision API.
 
-    # Get JSON credentials from environment variable
-    creds_json = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-    if not creds_json:
-        raise EnvironmentError("GOOGLE_APPLICATION_CREDENTIALS_JSON is not set.")
+    Args:
+        image_path (str): Local path to the image file.
 
-    # Parse the string into a dictionary and restore newlines
-    service_account_info = json.loads(creds_json)
-    service_account_info["private_key"] = service_account_info["private_key"].replace("\\n", "\n")
+    Returns:
+        str: Extracted text or error message.
+    """
+    try:
+        # Initialize the Vision API client
+        client = vision.ImageAnnotatorClient()
 
-    # Create credentials object
-    credentials = service_account.Credentials.from_service_account_info(
-        service_account_info,
-        scopes=["https://www.googleapis.com/auth/cloud-platform"]
-    )
+        # Read the image content
+        with open(image_path, 'rb') as image_file:
+            content = image_file.read()
 
-    # Initialize the client with credentials
-    client = vision.ImageAnnotatorClient(credentials=credentials)
+        image = vision.Image(content=content)
 
-    # Read the image file
-    with open(image_path, 'rb') as image_file:
-        content = image_file.read()
+        # Call document_text_detection
+        response = client.document_text_detection(image=image)
 
-    # Construct the image
-    image = vision.Image(content=content)
+        if response.error.message:
+            raise Exception(f"API Error: {response.error.message}")
 
-    # Perform document text detection
-    response = client.document_text_detection(image=image)
+        annotations = response.full_text_annotation
 
-    # Check for API errors
-    if response.error.message:
-        raise Exception(f'Google Vision API Error: {response.error.message}')
+        if annotations and annotations.text:
+            formatted_text = annotations.text.strip()
+            print("Detected document text:\n")
+            print(formatted_text)
+            return formatted_text
+        else:
+            return "No document text detected."
 
-    annotations = response.full_text_annotation
+    except Exception as e:
+        return f"Error occurred during OCR: {str(e)}"
 
-    if annotations and annotations.text:
-        formatted_text = annotations.text
-        print('Detected document text:')
-        print(formatted_text)
-        return formatted_text
-    else:
-        return 'No document text detected.'
-
-# For local testing:
-# if __name__ == "__main__":
-#     image_path = './images1.jpg'
-#     detect_document_text(image_path)
+# Optional CLI interface for testing
+if __name__ == "__main__":
+    image_path = "./images1.jpg"  # Change to your actual test image path
+    result = detect_document_text(image_path)
+    print("\n--- Result ---\n")
+    print(result)
