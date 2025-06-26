@@ -1,90 +1,163 @@
-import os
+import osAdd commentMore actions
 import cv2
 import numpy as np
-import pandas as pd
-from paddleocr import PaddleOCR
+import csv
+import numpy as np
 import tempfile
-from collections import defaultdict
+from google.cloud import vision
+import os
 
-def extract_table_to_excel(image_path):
-    """Extract tables from image with accurate row/column mapping to Excel"""
+# ✅ Load GCP credentials securely from environment variable
+service_account_info = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+if service_account_info:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp:
+        temp.write(service_account_info.encode())
+        temp_path = temp.name
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_path
+else:
+    raise EnvironmentError("GOOGLE_SERVICE_ACCOUNT_JSON not set!")
+
+def extract_text_and_generate_csv(image_path):
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'myservicegapi.json'
     
-    # Initialize PaddleOCR (more accurate for tables than Google Vision)
-    ocr = PaddleOCR(use_angle_cls=True, lang='en', 
-                   ocr_version='PP-OCRv4', 
-                   show_log=False)
+    # Initialize the Google Cloud Vision client
+    """
+    Extracts tabular text from an image and writes it to a CSV using Google Cloud Vision API.
+    Returns the path of the generated CSV file.
+    """
+    # Initialize the Vision client
+    client = vision.ImageAnnotatorClient()
 
-    # Enhanced image processing
-    img = cv2.imread(image_path)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    
-    # Noise reduction and binarization
-    blur = cv2.GaussianBlur(gray, (5,5), 0)
-    thresh = cv2.adaptiveThreshold(blur, 255, 
-                                 cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                 cv2.THRESH_BINARY_INV, 11, 4)
+    # Load the image
+    # Step 1: Read image and pre-process
+    image = cv2.imread(image_path)
 
-    # Detect table structure
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
-    dilate = cv2.dilate(thresh, kernel, iterations=4)
+    # Convert the image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    binary = cv2.adaptiveThreshold(~gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, 
+                                   cv2.THRESH_BINARY, 15, -2)
 
-    # Find contours for cells
-    contours, _ = cv2.findContours(dilate, cv2.RETR_TREE, 
-                                 cv2.CHAIN_APPROX_SIMPLE)
-    
-    # Filter and sort contours (LTR, Top-Bottom)
-    contours = sorted([cv2.boundingRect(c) for c in contours 
-                      if cv2.contourArea(c) > 500], 
-                     key=lambda x: (x[1]//20, x[0]))  # Row tolerance = 20px
+    # Apply adaptive thresholding to invert the image and get a binary image
+    binary = cv2.adaptiveThreshold(~gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, -2)
 
-    # Extract text and group by rows/columns
-    table_data = defaultdict(dict)
-    row_tolerance = 20  # px tolerance for same row
-    
-    for idx, (x,y,w,h) in enumerate(contours):
-        cell_img = img[y:y+h, x:x+w]
-        
-        # OCR with Paddle (better than Google for tables)
-        result = ocr.ocr(cell_img, cls=True)
-        text = result[0][0][1][0] if result else ""
-        
-        # Determine row (group y coordinates within tolerance)
-        row_key = None
-        for existing_y in sorted(table_data.keys()):
-            if abs(y - existing_y) <= row_tolerance:
-                row_key = existing_y
-                break
-        if row_key is None:
-            row_key = y
-            
-        # Store by row then x coordinate
-        table_data[row_key][x] = text
+    # Create horizontal and vertical structures
+    # Step 2: Extract table structure
+    horizontal = binary.copy()
+    vertical = binary.copy()
+    scale = 20  # Adjust based on table size
 
-    # Convert to DataFrame
-    rows = []
-    for y in sorted(table_data.keys()):
-        row_texts = []
-        for x in sorted(table_data[y].keys()):
-            row_texts.append(table_data[y][x])
-        rows.append(row_texts)
-    
-    df = pd.DataFrame(rows).fillna("")
+    # Define a size for the morphology operation
+    scale = 20
 
-    # Create Excel file
-    output_dir = os.path.join(os.path.dirname(image_path), "output_excel")
-    os.makedirs(output_dir, exist_ok=True)
-    
-    excel_path = os.path.join(output_dir, 
-                            f"{os.path.splitext(os.path.basename(image_path))[0]}_output.xlsx")
-    
-    df.to_excel(excel_path, index=False, header=False)
-    print(f"Excel file saved to: {excel_path}")
-    return excel_path
+    # Detect horizontal lines
+    horizontalsize = horizontal.shape[1] // scale
+    horizontalStructure = cv2.getStructuringElement(cv2.MORPH_RECT, (horizontalsize, 1))
+    horizontal = cv2.erode(horizontal, horizontalStructure)
+    horizontal = cv2.dilate(horizontal, horizontalStructure)
+    # Horizontal lines
+    h_size = horizontal.shape[1] // scale
+    h_structure = cv2.getStructuringElement(cv2.MORPH_RECT, (h_size, 1))
+    horizontal = cv2.erode(horizontal, h_structure)
+    horizontal = cv2.dilate(horizontal, h_structure)
 
-# Example usage
-if __name__ == "__main__":
-    image_path = "your_table_image.png"  # Replace with your image
-    if os.path.exists(image_path):
-        excel_file = extract_table_to_excel(image_path)
-    else:
-        print("Error: Image file not found")
+    # Detect vertical lines
+    verticalsize = vertical.shape[0] // scale
+    verticalStructure = cv2.getStructuringElement(cv2.MORPH_RECT, (1, verticalsize))
+    vertical = cv2.erode(vertical, verticalStructure)
+    vertical = cv2.dilate(vertical, verticalStructure)
+    # Vertical lines
+    v_size = vertical.shape[0] // scale
+    v_structure = cv2.getStructuringElement(cv2.MORPH_RECT, (1, v_size))
+    vertical = cv2.erode(vertical, v_structure)
+    vertical = cv2.dilate(vertical, v_structure)
+
+    # Combine horizontal and vertical lines
+    # Step 3: Combine lines to get cell boxes
+    mask = cv2.add(horizontal, vertical)
+
+    # Dilate the grid to ensure clear cell separation
+    mask = cv2.dilate(mask, np.ones((3, 3), np.uint8))
+
+    # Find contours of the grid cells
+    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    # List to store extracted text with their bounding box coordinates
+    cell_data = []
+
+    # Iterate through each detected contour
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+
+        # Filter out small contours that might be noise
+        if w > 50 and h > 20:
+            # Extract the cell from the image
+            cell = image[y:y + h, x:x + w]
+
+            # Convert the cell to a byte array
+            _, encoded_image = cv2.imencode('.jpg', cell)
+            content = encoded_image.tobytes()
+
+            # Create an image object for Google Cloud Vision API
+            vision_image = vision.Image(content=content)
+
+            # Perform text detection on the cell image
+            response = client.text_detection(image=vision_image)
+            texts = response.text_annotations
+            text = texts[0].description.strip() if texts else ""
+            cell_data.append((x, y, text))
+
+            # Extract the detected text
+            text = texts[0].description if texts else ""
+
+            # Store the extracted text along with the coordinates
+            cell_data.append((x, y, text.strip()))
+
+    # Sort the cell data by y-coordinate (primary) and x-coordinate (secondary)
+    # Step 4: Sort cells row-wise then column-wise
+    cell_data.sort(key=lambda item: (item[1], item[0]))
+
+    # Generate the output CSV file path
+    # Step 5: Create output path
+    image_folder = os.path.dirname(image_path)
+    output_folder = os.path.join(image_folder, 'outputcsv')
+    os.makedirs(output_folder, exist_ok=True)
+
+    csv_filename = os.path.splitext(os.path.basename(image_path))[0] + '_output.csv'
+    output_csv_path = os.path.join(image_folder, 'outputcsv', csv_filename)
+    output_csv_path = os.path.join(output_folder, csv_filename)
+
+    # Write the extracted text into a CSV file
+    # Step 6: Write to CSV
+    with open(output_csv_path, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+
+        # Initialize the row list
+        current_row = []
+        previous_y = cell_data[0][1]
+        previous_y = cell_data[0][1] if cell_data else 0
+
+        for x, y, text in cell_data:
+            if abs(y - previous_y) > 10:  # Adjust the threshold based on the spacing between rows
+            if abs(y - previous_y) > 10:  # adjust based on row gap
+                writer.writerow(current_row)
+                current_row = []
+                previous_y = y
+
+            current_row.append(text)
+
+        # Write the last row
+        if current_row:
+            writer.writerow(current_row)
+    print(output_csv_path)
+
+    print(f"CSV written to: {output_csv_path}")
+    return output_csv_path
+
+# # Usage example
+# # Example usage
+# if __name__ == "__main__":
+#     image_path = './image.png'
+#     csv_path = extract_text_and_generate_csv(image_path)
+#     print(f"CSV file saved at: {csv_path}")
+#     img_path = "./tablesample.png"
+#     csv_result = extract_text_and_generate_csv(img_path)
