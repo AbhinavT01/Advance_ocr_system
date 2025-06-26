@@ -7,6 +7,106 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans text-gray-800">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Processed Bank Card</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-gray-800">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md fixed top-0 left-0 w-full z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex space-x-6 text-sm sm:text-base text-gray-700 font-medium">
+        <a href="/" class="hover:text-black transition">Home</a>
+        <a href="/doc" class="hover:text-black transition">Doc Scanner</a>
+        <a href="/table" class="hover:text-black transition">Table Scan</a>
+        <a href="/bank" class="hover:text-black transition">Bank Card</a>
+      </div>
+      <div id="currentTime" class="text-sm bg-green-500 text-white px-4 py-1 rounded-md shadow"></div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="pt-28 pb-12 px-4 max-w-5xl mx-auto">
+    <div class="bg-white border border-gray-200 shadow-sm rounded-lg p-6 space-y-6">
+
+      <!-- Back Button -->
+      <div>
+        <button onclick="history.back()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md text-sm font-medium">
+          ← Back
+        </button>
+      </div>
+
+      <!-- Toggle Image Button -->
+      <div class="text-center">
+        <button id="togglePreview" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md transition">
+          Toggle Image Preview
+        </button>
+      </div>
+
+      <!-- Image Preview -->
+      <div id="imageContainer" class="hidden text-center">
+        <label class="block text-gray-700 font-semibold mb-2">Image:</label>
+        <img id="image-preview" src="#" alt="Image Preview" class="mx-auto rounded border max-w-xs max-h-64 object-contain shadow" />
+      </div>
+
+      <!-- Table Display -->
+      <div class="overflow-x-auto">
+        <table class="w-full border border-gray-300 rounded-md overflow-hidden text-sm">
+          <thead>
+            <tr class="bg-gray-200 text-gray-800">
+              <th class="px-4 py-2 border-b text-left">Field</th>
+              <th class="px-4 py-2 border-b text-left">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for key, value in result.items() %}
+            {% if value %}
+            <tr class="bg-white hover:bg-gray-50">
+              <td class="px-4 py-2 border-b">{{ key }}</td>
+              <td class="px-4 py-2 border-b">{{ value }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- JavaScript -->
+  <script>
+    // Display current time with seconds
+    const currentTimeElement = document.getElementById('currentTime');
+    function updateTime() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      currentTimeElement.textContent = `${h}:${m}:${s}`;
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // Toggle image preview
+    const toggleBtn = document.getElementById('togglePreview');
+    const imageContainer = document.getElementById('imageContainer');
+    toggleBtn.addEventListener('click', () => {
+      imageContainer.classList.toggle('hidden');
+    });
+
+    // Load image from localStorage
+    const storedImage = localStorage.getItem('uploadedImage');
+    if (storedImage) {
+      document.getElementById('image-preview').src = storedImage;
+    }
+  </script>
+</body>
+</html>
 
   <!-- Navbar -->
   <nav class="bg-white shadow-md fixed top-0 left-0 w-full z-50">
