@@ -2,50 +2,50 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bank Card Uploader</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Uploader</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans text-gray-800 flex flex-col">
 
-  <!-- Navbar with Time -->
-  <nav class="bg-white shadow-md fixed top-0 left-0 w-full z-50">
+  <!-- Navbar -->
+  <nav class="fixed top-0 left-0 w-full bg-white shadow-md z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <!-- Left: Links -->
-      <div class="flex space-x-6 font-medium text-sm sm:text-base text-gray-700">
+      <!-- Left Side: Links -->
+      <div class="flex space-x-6 text-sm sm:text-base font-medium text-gray-700">
         <a href="/" class="hover:text-black transition">Home</a>
         <a href="/doc" class="hover:text-black transition">Doc Scanner</a>
         <a href="/table" class="hover:text-black transition">Table Scan</a>
         <a href="/bank" class="hover:text-black transition">Bank Card</a>
       </div>
-      <!-- Right: Time -->
+      <!-- Right Side: Time -->
       <div id="currentTime" class="text-sm bg-green-500 text-white px-3 py-1 rounded shadow"></div>
     </div>
   </nav>
 
-  <!-- Main Content -->
-  <main class="flex-grow flex items-center justify-center pt-28 pb-16 px-4">
-    <div class="bg-white border border-gray-200 rounded-lg shadow-md p-8 w-full max-w-xl space-y-6 text-center">
-      <h1 class="text-2xl font-bold">Bank Card Uploader</h1>
+  <!-- Upload Form Container -->
+  <main class="flex items-center justify-center pt-28 pb-12 px-4 flex-grow">
+    <div class="w-full max-w-xl bg-white rounded-lg shadow-md p-8 space-y-6 border border-gray-200">
+      <h1 class="text-2xl font-bold text-center">Document Uploader</h1>
 
-      <form action="/uploadbank" method="post" enctype="multipart/form-data" class="space-y-6">
-        <!-- File Upload -->
-        <label for="fileInput" class="block border-2 border-dashed border-blue-400 p-6 rounded-md text-gray-600 hover:bg-blue-50 cursor-pointer transition">
-          <i class="fas fa-folder-open mr-2"></i> Choose Bank Card Image
-          <input type="file" id="fileInput" name="file" accept="image/*" required class="hidden">
+      <form action="/uploaddoc" method="post" enctype="multipart/form-data" id="uploadForm" class="space-y-6">
+        <!-- File Upload Area -->
+        <label for="fileInput" class="block border-2 border-dashed border-blue-400 p-6 rounded-md text-gray-600 hover:bg-blue-50 cursor-pointer text-center transition">
+          <i class="fas fa-folder-open mr-2"></i> Choose Document Image
+          <input type="file" name="file" id="fileInput" accept="image/*" required class="hidden">
         </label>
 
         <!-- Preview -->
         <div id="imagePreviewContainer" class="hidden">
-          <h3 class="text-md font-semibold text-gray-700 mb-2">Card Preview</h3>
-          <div class="max-h-96 overflow-hidden rounded border">
-            <img id="imagePreview" src="#" alt="Preview" class="w-full object-contain">
+          <h3 class="text-md font-semibold text-gray-700 mb-2 text-center">Document Preview</h3>
+          <div id="previewWrapper" class="mx-auto rounded overflow-hidden border shadow max-h-96">
+            <img id="imagePreview" src="#" alt="Document Preview" class="w-full object-contain" />
           </div>
         </div>
 
         <!-- Upload Button -->
-        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-md transition">
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition">
           <i class="fas fa-upload mr-2"></i> Upload
         </button>
       </form>
@@ -57,36 +57,38 @@
     OCR &copy; 2024
   </footer>
 
-  <!-- JS: Preview & Time -->
+  <!-- Scripts -->
   <script>
-    // Image preview
-    document.getElementById('fileInput').addEventListener('change', function () {
-      const file = this.files[0];
+    // Image preview function
+    function previewImage() {
+      const fileInput = document.getElementById('fileInput');
       const imagePreview = document.getElementById('imagePreview');
-      const container = document.getElementById('imagePreviewContainer');
+      const imagePreviewContainer = document.getElementById('imagePreviewContainer');
 
+      const file = fileInput.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = function (e) {
           imagePreview.src = e.target.result;
-          container.classList.remove('hidden');
+          imagePreviewContainer.classList.remove('hidden');
           localStorage.setItem('uploadedImage', e.target.result);
         };
         reader.readAsDataURL(file);
       }
-    });
+    }
 
-    // Live time display
+    document.getElementById('fileInput').addEventListener('change', previewImage);
+
+    // Live time clock in navbar
     const currentTimeElement = document.getElementById('currentTime');
     function updateTime() {
       const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      const s = String(now.getSeconds()).padStart(2, '0');
-      currentTimeElement.textContent = `${h}:${m}:${s}`;
+      const timeString = now.toLocaleTimeString('en-GB');
+      currentTimeElement.textContent = timeString;
     }
     updateTime();
     setInterval(updateTime, 1000);
   </script>
+
 </body>
 </html>
