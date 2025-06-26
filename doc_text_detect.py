@@ -31,7 +31,7 @@ if __name__ == "__main__":
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './myservicegapi.json'
     
     # Path to the image file
-    image_path = './images.png'
+    # image_path = './images.png'
     
     # Detect document text
-    detect_document_text(image_path)
+    # detect_document_text(image_path)
