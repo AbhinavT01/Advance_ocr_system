@@ -1,39 +1,43 @@
+
 import os
 import re
-import cv2
-from PIL import Image
 from google.cloud import vision
+import cv2
 import pytesseract as tes
-from skimage import io, img_as_float
+import re
+from PIL import Image
+import os
 import imquality.brisque as brisque
+from skimage import io, img_as_float
 from human_detection import extract_person_names
 from bank_name import analyze_entities
-from google.oauth2 import service_account
 
-# ✅ Embed the service account credentials
-credentials_info = {
-  "type": "service_account",
-  "project_id": "aerobic-botany-464022-t6",
-  "private_key_id": "6ac5f02a7707e8251b35ffc296fe5c80c97bb406",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC8V5kX0oF5bpad\nzgEWCO4KtU0oWbWlXYYnMySml5CCaeZgFSEXefKaOH2cgC8zgLc+VVaeheReTSdS\nuIMkhDV/cWJEAOkLUtNr6cD2QdMFYnY3KOTg2Tbmoc8EEsoX/QqOSPY6sWpZgnC1\nbpCZ3s8aPUhFWq7fGkYNt882vBRL3t1U091pNDV3il8R9/ZVu80d6S/WnYlYng48\nn8HX4kHqM80Tiae61HwyUeXNbLML+AOoyLI+HCefFkuMDM8EBhXVzmvKwyJFJlwP\n+L49FpeeL0JTnkseDrkCB1IhmUhu1JDQHLYyf+lMd17EWlY1oOu2NDLS889PmREX\n1LQcoOJrAgMBAAECggEAPQUge6BfBGm48J2aqnnwLZX5zpXqDQ6U9URTnonCbw5C\nbmTKGOIQoLimsbqyEDymodJiQu/cQlU65UkUbBNNheHFVYT5/Ao0p2TPeLlw1fDF\nni9ooBSf/e70tDwmL8lyzxCCfheW/jMNsyqEPOX8MWMjdBziRTQs+CrSPsiGxuF5\nQ/tX18Y222/jUsFKpOFzH8EIeTc59Bszl8Y6hnt8Kvcy3eBxJiU3veqAvTNkl26R\n7id2+sDAnI1+TUYuIGuo4rbFv7byfYWRYe1wHHltPfhD+qwaSzSisUB3D+6eWOQd\n7ALZY+pbtX0OFeuchuZ1JxW4+VQrJrU/hEsnRtp08QKBgQD69fhjh/Ipd2the5vi\nQgPrX7QjJca7wI0amat8cNoS9mE4FAnUWUw5wmVhFukYmM8/emgpRp/tArUHSVAb\nAA+Bfho9Bp/zB0H9NUh0AVZTMGcGAGjo3sK7wd5EBzmrjsFlHlAQ7rZqk/VKuqNB\n6aVCLcZJ2HUi71pAJ8V8fLmCgwKBgQDAH77FbQGuOkYLjaW3SVuA1z9CRIyj6PPp\nJcJv5+TWXcvtwjMGMWKrBwoobzu2McYXA5hbH+Diz21AtO6yj7oisQxS26nqbbI6\nVBoQHwNwSU31CNRpgG2Rg2YR/hehgs+I6lkdBuEw4m6ftxUIIzIGeLV6W4ywg00s\nSOvcMtR7+QKBgCbswdMGQfxGhoQ/POVyIdN/K5yL/nAepIQss5mAk4J/boLZMNEb\n7KPE0B6oBA2JnhOVc9R7HNERK2zu5Rra/oyyN3Whsmtqg8S3X/6GOpJ6nnAi3iLI\ncmHW5xecG0jNwpdhhT+rFuYe/tvRaQMPL0+9c9T+WuTJRTFQOeReIBPrAoGBALxR\noZ5FJiOQbT4/3tLU7gNReWlMZgr4ebTr1TX5uP5CvHTWKUuFtvBrmxJdTctd6IyA\ncqPHkJjht3Z4o4yVg18j6i+Br4Dhe5TfARkSPT2gLPDlccfkIgJDKRaz2Jfw79qF\n00m3h55yJPsa61upnAxp34ELIdGXMlsZM1AI5uyJAoGAWkJh+iKmBVlOEM+mcYn4\nDFmiG1nvexdbOUYpRvj6ft7ObilBZ7ZIm8dYzWckSdsrj2zbomTMtBuS8IIrRTaQ\nC/i6e9RTz5xAPVsHXrD4AWFKWx14EMqkcmswTEG6DJsRhBVdGhvkhzeBNLLZhrMn\nu7bo0JVeiTy2T9vwej46WoY=\n-----END PRIVATE KEY-----\n",
-  "client_email": "advanceocr@aerobic-botany-464022-t6.iam.gserviceaccount.com",
-  "client_id": "112282222414363959436",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/advanceocr%40aerobic-botany-464022-t6.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
-}
+# regex_patterns.py
 
-credentials = service_account.Credentials.from_service_account_info(credentials_info)
-client = vision.ImageAnnotatorClient(credentials=credentials)
+# regex_patterns.py
 
-# Regex patterns
+# Pattern for card numbers (allowing spaces or hyphens between digits)
 card_number_pattern = r'\b(?:\d[ -]*?){13,16}\b'
+
+# Pattern for expiry dates
 expiry_date_pattern = r'\b\d{2}/\d{2}\b'
+
+# Expanded pattern for bank names with optional spaces and case insensitivity
+bank_name_pattern = r'(?i)\b(?:my\s*best\s*buy|PSECU|OpenSky|Bank\s*of\s*America|Chase|Wells\s*Fargo|Citi|Capital\s*One|U\.S\.\s*Bank|Discover|American\s*Express|PNC|TD\s*Bank|BB&T|SunTrust|HSBC|Fifth\s*Third\s*Bank|Ally\s*Bank|Charles\s*Schwab|Regions|KeyBank|Huntington|Citizens\s*Bank|BMO\s*Harris|Synchrony\s*Bank|Barclays|Santander|M&T\s*Bank|First\s*National\s*Bank|First\s*Republic|Silicon\s*Valley\s*Bank|Signature\s*Bank|Comerica|USAA|New\s*York\s*Community\s*Bank|First\s*Citizens|Western\s*Alliance|City\s*National|Popular\s*Bank|CIBC|Zions|Bank\s*of\s*the\s*West|Associated\s*Bank|BOK\s*Financial|MidFirst\s*Bank|Pacific\s*Western\s*Bank|East\s*West\s*Bank|Valley\s*National\s*Bank|UMB\s*Financial|Cathay\s*Bank|First\s*Hawaiian\s*Bank|Webster\s*Bank|Wintrust\s*Financial|Simmons\s*Bank|BancorpSouth|South\s*State\s*Bank|Old\s*National\s*Bank|United\s*Bank|First\s*Interstate\s*Bank|Columbia\s*Bank|Flagstar\s*Bank|Seacoast\s*National\s*Bank|Commerce\s*Bank|Investors\s*Bank|Glacier\s*Bank|Independent\s*Bank|Banner\s*Bank|BancFirst|Peoples\s*United\s*Bank|Old\s*Second\s*Bank|Peapack-Gladstone\s*Bank|First\s*Midwest\s*Bank|Renasant\s*Bank|First\s*Merchants\s*Bank|NBT\s*Bank|Provident\s*Bank|Southside\s*Bank|OceanFirst\s*Bank|Trustmark\s*Bank|First\s*Horizon\s*Bank|FirstBank|United\s*Community\s*Bank|TIAA\s*Bank|BankUnited|First\s*Commonwealth\s*Bank|Great\s*Southern\s*Bank|Carter\s*Bank|Union\s*Bank|Midland\s*States\s*Bank|Hanmi\s*Bank|City\s*National\s*Bank|Ameris\s*Bank|Prosperity\s*Bank|Valley\s*Bank|Vantage\s*Bank|PlainsCapital\s*Bank|First\s*Foundation\s*Bank|Nicolet\s*National\s*Bank|BankFirst\s*Financial\s*Services|Veritex\s*Community\s*Bank|Columbia\s*State\s*Bank|Heartland\s*Bank|Bankers\s*Trust|Republic\s*Bank|Bryn\s*Mawr\s*Trust|IncredibleBank|Origin\s*Bank|MidwestOne\s*Bank|First\s*National\s*Bank\s*of\s*Omaha|First\s*State\s*Bank|First\s*Federal\s*Bank|Cadence\s*Bank|Central\s*Bank|Texas\s*Capital\s*Bank|Amerant\s*Bank|Third\s*Coast\s*Bank|Summit\s*State\s*Bank|Legacy\s*Texas\s*Bank|FNB\s*Community\s*Bank|Central\s*Pacific\s*Bank|Eastern\s*Bank|Liberty\s*Bank|Stockman\s*Bank|Pinnacle\s*Bank|Fidelity\s*Bank|Great\s*Western\s*Bank|Merchants\s*Bank|Union\s*Savings\s*Bank|Stearns\s*Bank|Intrust\s*Bank|National\s*Bank|Pacific\s*Premier\s*Bank|Zions\s*Bank|Farmers\s*State\s*Bank|Luther\s*Burbank\s*Savings|First\s*City\s*Bank|CNB\s*Bank|Citizens\s*National\s*Bank|HomeStreet\s*Bank|Amalgamated\s*Bank|Amalgamated\s*Bank)\b'
+
+# Pattern for card types with optional spaces and case insensitivity
 card_type_pattern = r'(?i)\b(?:VISA|Master\s*Card|MasterCard|Debit|Credit|American\s*Express|Discover|JCB|Diners\s*Club|Union\s*Pay)\b'
 
-# OCR from image using Google Vision
+# Pattern for card holder names, excluding common phrases like "valid thru" or "good thru"
+card_holder_name_pattern = r'\b(?!valid\s*thru|good\s*thru)[A-Z]{2,}(?:\s[A-Z]{2,})*\b'
+
+
+
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './myservicegapi.json'
+client = vision.ImageAnnotatorClient()
+
+# Function to perform OCR using Google Vision API
 def extract_text_from_image(image_path):
     with open(image_path, 'rb') as image_file:
         content = image_file.read()
@@ -44,18 +48,27 @@ def extract_text_from_image(image_path):
         raise Exception(f'{response.error.message}')
     return texts[0].description if texts else ""
 
-# Extract key fields using regex + NLP
+# Function to extract information using regex
 def extract_info(text):
-    info = {
-        'Card Number': re.findall(card_number_pattern, text),
-        'Expiry Date': re.findall(expiry_date_pattern, text),
-        'Bank Name': analyze_entities(text),
-        'Card Type': re.findall(card_type_pattern, text),
-        'Card Holder Name': extract_person_names(text)
-    }
+    info = {}
+
+    # Extracting information
+    info['Card Number'] = re.findall(card_number_pattern, text)
+    info['Expiry Date'] = re.findall(expiry_date_pattern, text)
+    # info['Bank Name'] = re.findall(bank_name_pattern, text)
+    info['Bank Name'] = analyze_entities(text)
+    info['Card Type'] = re.findall(card_type_pattern, text)
+    info['Card Holder Name'] =extract_person_names(text) 
+
     return info
 
-# Uncomment for local test
-# image_path = './Bank-Cards-Reader/card2.png'
-# text = extract_text_from_image(image_path)
-# print(extract_info(text))
+# Paths to the uploaded images
+# image_paths ='./Bank-Cards-Reader/card2.png'
+
+# Extracting information from each image
+
+# text = extract_text_from_image(image_paths)
+# info = extract_info(text)
+# print(f"Information extracted from {image_paths}:")
+# print(info)
+# print("\n")
