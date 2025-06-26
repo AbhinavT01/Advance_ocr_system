@@ -24,23 +24,20 @@ def detect_document_text(image_path):
 
     # Perform document text detection
     response = client.document_text_detection(image=image)
+
+    if response.error.message:
+        raise Exception(f'API Error: {response.error.message}')
+
     annotations = response.full_text_annotation
 
     if annotations:
-        # Return the raw detected text
         formatted_text = annotations.text
-
         print('Detected document text:')
         print(formatted_text)
         return formatted_text
     else:
         return 'No document text detected.'
 
-    if response.error.message:
-        raise Exception(f'{response.error.message}')
-
 # if __name__ == "__main__":
-#     # Path to the image file
 #     image_path = './images1.jpg'
-#     # Detect document text
 #     detect_document_text(image_path)
