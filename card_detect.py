@@ -63,7 +63,9 @@ def extract_info(text):
     info['Card Number'] = re.findall(card_number_pattern, text)
     info['Expiry Date'] = re.findall(expiry_date_pattern, text)
     # info['Bank Name'] = re.findall(bank_name_pattern, text)
-    info['Bank Name'] = analyze_entities(text)
+    nlp_client = language_v1.LanguageServiceClient()
+    info['Bank Name'] = analyze_entities(text,nlp_client)
+    
     info['Card Type'] = re.findall(card_type_pattern, text)
     info['Card Holder Name'] =extract_person_names(text) 
 
