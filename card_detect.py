@@ -34,7 +34,7 @@ card_holder_name_pattern = r'\b(?!valid\s*thru|good\s*thru)[A-Z]{2,}(?:\s[A-Z]{2
 
 
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] =GOOGLE_APPLICATION_CREDENTIALS_CONTENT
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] ='GOOGLE_APPLICATION_CREDENTIALS_CONTENT'
 client = vision.ImageAnnotatorClient()
 
 # Function to perform OCR using Google Vision API
