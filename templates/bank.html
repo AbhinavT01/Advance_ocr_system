@@ -1,45 +1,75 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="transition-colors duration-300">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Bank Card Uploader</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    .dark .dark\:bg-gray-900 { background-color: #1a202c; }
+    .dark .dark\:bg-gray-800 { background-color: #2d3748; }
+    .dark .dark\:bg-gray-700 { background-color: #4a5568; }
+    .dark .dark\:text-white { color: #ffffff; }
+    .dark .dark\:text-gray-300 { color: #e2e8f0; }
+    .dark .dark\:border-gray-600 { border-color: #4b5563; }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans text-gray-800 flex flex-col">
+<body class="bg-gray-100 dark:bg-gray-900 dark:text-white min-h-screen font-sans text-gray-800 flex flex-col transition-colors duration-300">
 
-  <!-- Navbar with Time -->
-  <nav class="bg-white shadow-md fixed top-0 left-0 w-full z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <!-- Left: Links -->
-      <div class="flex space-x-6 font-medium text-sm sm:text-base text-gray-700">
-        <a href="/" class="hover:text-black transition">Home</a>
-        <a href="/doc" class="hover:text-black transition">Doc Scanner</a>
-        <a href="/table" class="hover:text-black transition">Table Scan</a>
-        <a href="/bank" class="hover:text-black transition">Bank Card</a>
+  <!-- Navbar -->
+  <nav class="bg-white dark:bg-gray-800 shadow-md fixed top-0 left-0 w-full z-50 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- Left: Nav & Toggle -->
+      <div class="flex items-center justify-between w-full sm:w-auto">
+        <button id="navToggle" class="sm:hidden text-gray-600 dark:text-gray-300 focus:outline-none">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <div id="navLinks" class="hidden sm:flex space-x-6 ml-4 font-medium text-sm sm:text-base text-gray-700 dark:text-gray-300">
+          <a href="/" class="hover:text-black dark:hover:text-white transition">Home</a>
+          <a href="/doc" class="hover:text-black dark:hover:text-white transition">Doc Scanner</a>
+          <a href="/table" class="hover:text-black dark:hover:text-white transition">Table Scan</a>
+          <a href="/bank" class="hover:text-black dark:hover:text-white transition">Bank Card</a>
+        </div>
       </div>
-      <!-- Right: Time -->
-      <div id="currentTime" class="text-sm bg-green-500 text-white px-3 py-1 rounded shadow"></div>
+
+      <!-- Right: Clock & Dark Mode -->
+      <div class="flex items-center space-x-4">
+        <button id="darkToggle" class="text-sm px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition">
+          🌙 Dark
+        </button>
+        <div id="currentTime" class="text-sm bg-green-500 text-white px-3 py-1 rounded shadow"></div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="sm:hidden hidden flex-col px-4 pb-2 space-y-2 text-gray-700 dark:text-gray-300">
+      <a href="/" class="block hover:text-black dark:hover:text-white transition">Home</a>
+      <a href="/doc" class="block hover:text-black dark:hover:text-white transition">Doc Scanner</a>
+      <a href="/table" class="block hover:text-black dark:hover:text-white transition">Table Scan</a>
+      <a href="/bank" class="block hover:text-black dark:hover:text-white transition">Bank Card</a>
     </div>
   </nav>
 
   <!-- Main Content -->
   <main class="flex-grow flex items-center justify-center pt-28 pb-16 px-4">
-    <div class="bg-white border border-gray-200 rounded-lg shadow-md p-8 w-full max-w-xl space-y-6 text-center">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-8 w-full max-w-xl space-y-6 text-center transition-colors">
       <h1 class="text-2xl font-bold">Bank Card Uploader</h1>
 
       <form action="/uploadbank" method="post" enctype="multipart/form-data" class="space-y-6">
         <!-- File Upload -->
-        <label for="fileInput" class="block border-2 border-dashed border-blue-400 p-6 rounded-md text-gray-600 hover:bg-blue-50 cursor-pointer transition">
+        <label for="fileInput" class="block border-2 border-dashed border-blue-400 p-6 rounded-md text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition">
           <i class="fas fa-folder-open mr-2"></i> Choose Bank Card Image
           <input type="file" id="fileInput" name="file" accept="image/*" required class="hidden">
         </label>
 
         <!-- Preview -->
         <div id="imagePreviewContainer" class="hidden">
-          <h3 class="text-md font-semibold text-gray-700 mb-2">Card Preview</h3>
-          <div class="max-h-96 overflow-hidden rounded border">
+          <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300 mb-2">Card Preview</h3>
+          <div class="max-h-96 overflow-hidden rounded border border-gray-300 dark:border-gray-600">
             <img id="imagePreview" src="#" alt="Preview" class="w-full object-contain">
           </div>
         </div>
@@ -53,22 +83,21 @@
   </main>
 
   <!-- Footer -->
-  <footer class="bg-white shadow-inner py-3 text-center text-sm text-gray-500">
+  <footer class="bg-white dark:bg-gray-800 text-center shadow-inner py-3 text-sm text-gray-500 dark:text-gray-400">
     OCR &copy; 2025
   </footer>
 
-  <!-- JS: Preview & Time -->
+  <!-- JavaScript -->
   <script>
     // Image preview
     document.getElementById('fileInput').addEventListener('change', function () {
       const file = this.files[0];
-      const imagePreview = document.getElementById('imagePreview');
+      const preview = document.getElementById('imagePreview');
       const container = document.getElementById('imagePreviewContainer');
-
       if (file) {
         const reader = new FileReader();
         reader.onload = function (e) {
-          imagePreview.src = e.target.result;
+          preview.src = e.target.result;
           container.classList.remove('hidden');
           localStorage.setItem('uploadedImage', e.target.result);
         };
@@ -76,7 +105,7 @@
       }
     });
 
-    // Live time display
+    // Clock
     const currentTimeElement = document.getElementById('currentTime');
     function updateTime() {
       const now = new Date();
@@ -87,6 +116,36 @@
     }
     updateTime();
     setInterval(updateTime, 1000);
+
+    // Mobile menu toggle
+    document.getElementById('navToggle').addEventListener('click', () => {
+      document.getElementById('mobileMenu').classList.toggle('hidden');
+    });
+
+    // Dark mode toggle
+    const html = document.documentElement;
+    const toggleBtn = document.getElementById('darkToggle');
+
+    function setDarkMode(enabled) {
+      if (enabled) {
+        html.classList.add('dark');
+        toggleBtn.textContent = '☀️ Light';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.classList.remove('dark');
+        toggleBtn.textContent = '🌙 Dark';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    toggleBtn.addEventListener('click', () => {
+      setDarkMode(!html.classList.contains('dark'));
+    });
+
+    // Load stored theme
+    if (localStorage.getItem('theme') === 'dark') {
+      setDarkMode(true);
+    }
   </script>
 </body>
 </html>
