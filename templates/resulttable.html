@@ -1,150 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processed License Card</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-        }
-
-        .bg-gradient-to-r {
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-        }
-
-        .bg-dark-blue {
-            background-color: #2c3e50; /* Dark blue color */
-        }
-
-        .bg-light-blue {
-            background-color: #3498db; /* Light blue color */
-        }
-
-        .container {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 600px;
-            text-align: center;
-        }
-
-        .file-label {
-            border: 2px dashed #3498db;
-            padding: 2rem;
-            text-align: center;
-            transition: background 0.3s ease, border 0.3s ease;
-            color: #fff;
-        }
-
-        .file-label:hover {
-            background: rgba(52, 152, 219, 0.1);
-            border: 2px dashed #fff;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .btn-upload {
-            background: #4FD1C5;
-            color: #fff;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            transition: background 0.3s ease;
-            display: inline-block;
-            margin-top: 1rem;
-        }
-
-        .btn-upload:hover {
-            background: #3caea3;
-        }
-
-        .download-btn {
-            background: #3498db;
-            color: #fff;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            transition: background 0.3s ease;
-            margin-top: 1rem;
-            display: inline-block;
-            text-decoration: none; /* Remove default underline */
-        }
-
-        .download-btn:hover {
-            background: #2980b9;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tabular Data Processed</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
 </head>
-<body class="bg-gradient-to-r">
-    <!-- Header -->
-    <header class=" bg-gradient-to-r text-white font-weight-bold py-4 px-6 flex justify-between items-center relative w-full " >
-        <h1 class="text-2xl">Tabular Data processed</h1>
-        <div id="currentTime" class="text-lg px-4 py-2 rounded bg-green-500 hover:bg-green-600 transition duration-300 absolute top-2 right-4"></div>
-    </header>
+<body class="bg-gray-100 font-sans text-gray-800 min-h-screen flex flex-col">
 
-    <!-- Main Content -->
-    <div class="container mx-auto mt-8 p-6 bg-white rounded-md shadow-md">
-        <!-- Image Preview Toggle Button -->
-        <button id="togglePreview" class="bg-light-blue text-white font-bold py-2 px-4 rounded-md mb-4">Toggle Image Preview</button>
-
-        <!-- Image Preview -->
-        <div id="imageContainer" class="image-container hidden">
-            <label for="image" class="block font-bold text-white">Image:</label>
-            <img id="image-preview" src="#" alt="Image Preview" class="mx-auto" style="max-width: 250px; max-height: 250px;">
-        </div>
-
-        <!-- Download button -->
-        <a id="downloadLink" class="download-btn" href="{{ csv_url }}" download="output.csv">Download CSV</a>
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md fixed top-0 left-0 w-full z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex space-x-6 text-sm sm:text-base text-gray-700 font-medium">
+        <a href="/" class="hover:text-black transition">Home</a>
+        <a href="/doc" class="hover:text-black transition">Doc Scanner</a>
+        <a href="/table" class="hover:text-black transition">Table Scan</a>
+        <a href="/bank" class="hover:text-black transition">Bank Card</a>
+      </div>
+      <div id="currentTime" class="text-sm bg-green-500 text-white px-3 py-1 rounded shadow"></div>
     </div>
+  </nav>
 
-    <!-- Footer -->
-    <footer class="bg-gradient-to-r vsc-initialized">
-        <p>OCR&copy; 2024</p>
-    </footer>
+  <!-- Main Content -->
+  <main class="pt-28 px-4 pb-12 max-w-2xl mx-auto w-full">
+    <div class="bg-white border border-gray-200 shadow-md rounded-lg p-6 space-y-6">
 
-    <!-- JavaScript to display the current time with seconds and toggle image preview -->
-    <script>
-        // JavaScript to display the current time with seconds
-        const currentTimeElement = document.getElementById('currentTime');
+      <!-- Back Button -->
+      <div>
+        <button onclick="history.back()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md text-sm font-medium">
+          ← Back
+        </button>
+      </div>
 
-        function updateTime() {
-            const currentTime = new Date();
-            const hours = currentTime.getHours().toString().padStart(2, '0');
-            const minutes = currentTime.getMinutes().toString().padStart(2, '0');
-            const seconds = currentTime.getSeconds().toString().padStart(2, '0');
-            const timeString = `${hours}:${minutes}:${seconds}`;
-            currentTimeElement.textContent = timeString;
-        }
+      <!-- Toggle Image Preview Button -->
+      <div class="text-center">
+        <button id="togglePreview" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded transition">
+          Toggle Image Preview
+        </button>
+      </div>
 
-        updateTime(); // Update time immediately
-        setInterval(updateTime, 1000); // Update time every second
+      <!-- Image Preview Section -->
+      <div id="imageContainer" class="hidden text-center">
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Image Preview:</label>
+        <img id="image-preview" src="#" alt="Image Preview"
+             class="mx-auto border rounded max-w-xs max-h-64 object-contain shadow" />
+      </div>
 
-        // JavaScript to toggle image preview
-        const toggleButton = document.getElementById('togglePreview');
-        const imageContainer = document.getElementById('imageContainer');
+      <!-- Download Button -->
+      <div class="text-center">
+        <a id="downloadLink"
+           href="{{ csv_url }}"
+           download="output.csv"
+           class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow transition">
+          Download CSV
+        </a>
+      </div>
+    </div>
+  </main>
 
-        toggleButton.addEventListener('click', () => {
-            imageContainer.classList.toggle('hidden');
-        });
+  <!-- Footer -->
+  <footer class="text-center py-4 text-sm text-gray-500 mt-auto">
+    OCR &copy; 2024
+  </footer>
 
-        // JavaScript to fetch and display the image from local storage
-        const storedImage = localStorage.getItem('uploadedImage');
-        if (storedImage) {
-            const imagePreview = document.getElementById('image-preview');
-            imagePreview.src = storedImage;
-        }
-    </script>
+  <!-- JavaScript -->
+  <script>
+    // Show current time
+    const currentTimeElement = document.getElementById('currentTime');
+    function updateTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-GB');
+      currentTimeElement.textContent = timeString;
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // Toggle image preview
+    const toggleButton = document.getElementById('togglePreview');
+    const imageContainer = document.getElementById('imageContainer');
+    toggleButton.addEventListener('click', () => {
+      imageContainer.classList.toggle('hidden');
+    });
+
+    // Load image from localStorage
+    const storedImage = localStorage.getItem('uploadedImage');
+    if (storedImage) {
+      document.getElementById('image-preview').src = storedImage;
+    }
+  </script>
 </body>
 </html>
