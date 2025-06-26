@@ -5,8 +5,7 @@ import csv
 import tempfile
 from google.cloud import vision
 
-# Constants
-ROW_TOLERANCE = 15  # pixels
+ROW_TOLERANCE = 15  # pixel tolerance for row alignment
 
 # ------------------ Google Credential Setup ------------------
 
@@ -23,29 +22,28 @@ def setup_google_vision_client():
 
 # ------------------ Main Function: Row-Aligned Text to CSV ------------------
 
-def extract_text_by_row_alignment(image_path):
+def extract_text_and_generate_csv(image_path):
     try:
-        # Setup Vision Client
         client = setup_google_vision_client()
 
-        # Load image
+        # Read image
         image = cv2.imread(image_path)
         if image is None:
-            print(f"❌ Image not found: {image_path}")
-            return None
+            raise FileNotFoundError(f"Image not found: {image_path}")
 
         # Encode image for API
         _, encoded_image = cv2.imencode('.jpg', image)
         vision_image = vision.Image(content=encoded_image.tobytes())
-        response = client.document_text_detection(image=vision_image)
 
+        # Perform text detection
+        response = client.document_text_detection(image=vision_image)
         if not response.text_annotations:
             print("⚠️ No text found in image.")
             return None
 
-        # Extract word-level bounding boxes
+        # Get word-level annotations
         boxes = []
-        for annotation in response.text_annotations[1:]:  # skip full-text
+        for annotation in response.text_annotations[1:]:  # Skip full text
             text = annotation.description.replace('\n', ' ').strip()
             vertices = annotation.bounding_poly.vertices
             if len(vertices) < 4:
@@ -54,10 +52,8 @@ def extract_text_by_row_alignment(image_path):
             y = int(np.mean([v.y for v in vertices if v.y is not None]))
             boxes.append((x, y, text))
 
-        # Sort boxes top-to-bottom, then left-to-right
+        # Sort and group into rows
         boxes.sort(key=lambda b: (b[1], b[0]))
-
-        # Group by horizontal alignment
         rows = []
         current_row = []
         prev_y = None
@@ -75,25 +71,23 @@ def extract_text_by_row_alignment(image_path):
             current_row.sort()
             rows.append([txt for _, txt in current_row])
 
-        # Save to CSV
+        # Create output folder and file path
         output_dir = os.path.join(os.path.dirname(image_path), "outputcsv")
         os.makedirs(output_dir, exist_ok=True)
-        output_csv = os.path.join(output_dir, os.path.splitext(os.path.basename(image_path))[0] + "_aligned.csv")
+        output_csv_path = os.path.join(
+            output_dir,
+            os.path.splitext(os.path.basename(image_path))[0] + "_aligned.csv"
+        )
 
-        with open(output_csv, "w", newline="", encoding="utf-8") as f:
+        # Write to CSV
+        with open(output_csv_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             for row in rows:
                 writer.writerow(row)
 
-        print(f"✅ CSV generated successfully: {output_csv}")
-        return output_csv
+        print(f"✅ CSV saved to: {output_csv_path}")
+        return output_csv_path
 
     except Exception as e:
-        print(f"❌ Error occurred: {e}")
+        print(f"❌ Failed to process table: {e}")
         return None
-
-# ------------------ Run Script ------------------
-
-# if __name__ == "__main__":
-#     test_image_path = "./sample_data/5.png"  # Replace with your test image
-#     extract_text_by_row_alignment(test_image_path)
