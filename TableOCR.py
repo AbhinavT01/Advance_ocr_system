@@ -19,7 +19,7 @@ def setup_google_vision_client():
 
     return vision.ImageAnnotatorClient()
 
-# ------------------ Table Extraction and Excel Writing ------------------
+# ------------------ Main Function: Table Extraction and Excel ------------------
 
 def extract_table_and_save_excel(image_path):
     try:
@@ -48,7 +48,6 @@ def extract_table_and_save_excel(image_path):
         mask = cv2.dilate(mask, np.ones((3, 3), np.uint8))
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        # Filter and sort boxes
         boxes = [cv2.boundingRect(cnt) for cnt in contours if cv2.boundingRect(cnt)[2] > 50 and cv2.boundingRect(cnt)[3] > 20]
         boxes = sorted(boxes, key=lambda b: (b[1], b[0]))
 
@@ -74,7 +73,6 @@ def extract_table_and_save_excel(image_path):
         ws = wb.active
         ws.title = "Extracted Table"
 
-        # Extract and place text in Excel cell
         for row_idx, row in enumerate(rows, start=1):
             for col_idx, (x, y, w, h) in enumerate(row, start=1):
                 cell_img = image[y:y+h, x:x+w]
@@ -104,6 +102,14 @@ def extract_table_and_save_excel(image_path):
         print(f"❌ Failed: {e}")
         return None
 
-# ------------------ Example ------------------
-# if __name__ == "__main__":
-#     extract_table_and_save_excel("table_image.png")
+# ------------------ Alias for compatibility ------------------
+
+def extract_text_and_generate_csv(image_path):
+    """Alias wrapper for legacy usage."""
+    return extract_table_and_save_excel(image_path)
+
+# ------------------ CLI Usage ------------------
+
+if __name__ == "__main__":
+    test_image = "your_image.png"  # Replace with your image path
+    extract_text_and_generate_csv(test_image)
