@@ -1,97 +1,103 @@
-import reAdd commentMore actions
+import os
+import re
 import tempfile
 from google.cloud import vision
 from google.cloud import language_v1
 from human_detection import extract_person_names
 from bank_name import analyze_entities
 
-@@ -23,10 +24,17 @@
-            temp_path = temp.name
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_path
-            return vision.ImageAnnotatorClient()
-
-    except Exception as e:
-        raise RuntimeError(f"Failed to set up Google Vision credentials: {e}")
-
-# ------------------ Setup Google NLP Client ------------------
-
-def setup_google_nlp_client():
-    try:
-        return language_v1.LanguageServiceClient()
-    except Exception as e:
-        raise RuntimeError(f"Failed to initialize Google NLP client: {e}")
-
 # ------------------ Regex Patterns ------------------
 
 card_number_pattern = r'\b(?:\d[ -]*?){13,16}\b'
-@@ -36,7 +44,7 @@
+expiry_date_pattern = r'\b\d{2}/\d{2}\b'
+card_type_pattern = r'(?i)\b(?:VISA|Master\s*Card|MasterCard|Debit|Credit|American\s*Express|Discover|JCB|Diners\s*Club|Union\s*Pay)\b'
+card_holder_name_pattern = r'\b(?!valid\s*thru|good\s*thru)[A-Z]{2,}(?:\s[A-Z]{2,})*\b'
+
+# ------------------ Credential Setup ------------------
+
+def setup_google_vision_client():
+    """
+    Sets up Google Vision API client using service account credentials from an environment variable.
+    """
+    try:
+        credentials_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+        if not credentials_json:
+            raise EnvironmentError("❌ GOOGLE_SERVICE_ACCOUNT_JSON not set!")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp_file:
+            temp_file.write(credentials_json.encode())
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file.name
+
+        return vision.ImageAnnotatorClient()
+    except Exception as e:
+        raise RuntimeError(f"❌ Vision client setup failed: {e}")
+
+def setup_google_nlp_client():
+    """
+    Initializes Google Cloud NLP client.
+    """
+    try:
+        return language_v1.LanguageServiceClient()
+    except Exception as e:
+        raise RuntimeError(f"❌ NLP client setup failed: {e}")
 
 # ------------------ OCR Function ------------------
 
-def extract_text_from_image(image_path, client):
 def extract_text_from_image(image_path, vision_client):
     """
-    Uses Google Cloud Vision to extract text from an image.
+    Uses Google Cloud Vision to extract text from the given image.
     """
-@@ -45,7 +53,7 @@
+    try:
+        with open(image_path, 'rb') as image_file:
             content = image_file.read()
 
         image = vision.Image(content=content)
-        response = client.text_detection(image=image)
         response = vision_client.text_detection(image=image)
 
         if response.error.message:
-            raise Exception(f'API Error: {response.error.message}')
-@@ -56,15 +64,15 @@
+            raise RuntimeError(f"🛑 Vision API error: {response.error.message}")
+
+        return response.text_annotations[0].description if response.text_annotations else ""
+    except Exception as e:
+        raise RuntimeError(f"❌ OCR text extraction failed: {e}")
 
 # ------------------ Info Extraction ------------------
 
-def extract_info(text):
 def extract_info(text, nlp_client):
     """
-    Extracts card-related info from OCR'd text using regex + NLP.
+    Extracts card information from OCR text using regex and NLP.
     """
     try:
         return {
-            'Card Number': re.findall(card_number_pattern, text),
-            'Expiry Date': re.findall(expiry_date_pattern, text),
-            'Bank Name': analyze_entities(text),  # NLP model for bank detection
-            'Bank Name': analyze_entities(text, nlp_client),  # ✅ Fix: passed required client
-            'Card Type': re.findall(card_type_pattern, text),
-            'Card Holder Name': extract_person_names(text)  # Custom logic
+            "Card Number": re.findall(card_number_pattern, text),
+            "Expiry Date": re.findall(expiry_date_pattern, text),
+            "Bank Name": analyze_entities(text, nlp_client),
+            "Card Type": re.findall(card_type_pattern, text),
+            "Card Holder Name": extract_person_names(text)
         }
-@@ -74,24 +82,25 @@
-# ------------------ Testing ------------------
+    except Exception as e:
+        raise RuntimeError(f"❌ Info extraction failed: {e}")
+
+# ------------------ Main Test ------------------
 
 if __name__ == "__main__":
-    image_path = './Bank-Cards-Reader/card2.png'  # Example test image
-    image_path = './Bank-Cards-Reader/card2.png'  # Update to actual path
+    image_path = "./Bank-Cards-Reader/card2.png"  # Test path
 
     try:
-        print("Setting up credentials...")
-        client = setup_google_vision_credentials()
         print("🔐 Setting up credentials...")
-        vision_client = setup_google_vision_credentials()
+        vision_client = setup_google_vision_client()
         nlp_client = setup_google_nlp_client()
 
-        print("Extracting text from image...")
-        text = extract_text_from_image(image_path, client)
-        print("📸 Extracting text from image...")
+        print("📸 Performing OCR...")
         text = extract_text_from_image(image_path, vision_client)
 
-        print("\nExtracting structured info...")
-        info = extract_info(text)
-        print("\n📊 Extracting structured info...")
+        print("🧾 Extracting card info...")
         info = extract_info(text, nlp_client)
 
-        print("\n=== OCR Output ===")
-        print("\n=== 📝 OCR Output ===")
-        print(text)
-
-        print("\n=== Extracted Info ===")
-        print("\n=== 🧾 Extracted Info ===")
-        for key, value in info.items():
-            print(f"{key}: {value}")
+        print("\n📝 OCR Text:\n", text)
+        print("\n✅ Extracted Info:")
+        for k, v in info.items():
+            print(f"{k}: {v}")
 
     except Exception as e:
-        print(f"\n❌ Error during processing: {str(e)}")
+        print(f"\n❌ Processing failed: {str(e)}")
