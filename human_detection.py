@@ -1,10 +1,27 @@
-from google.cloud import language_v1
 import os
+import json
+import tempfile
+from google.cloud import language_v1
 
-# Set Google Cloud credentials environment variable
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'myservicegapi.json'
+# Step 1: Load service account JSON from environment variable (used in Render)
+service_account_info = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
 
+# Step 2: Write to a temporary file for Google Cloud SDK to use
+if service_account_info:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp:
+        temp.write(service_account_info.encode())
+        temp_path = temp.name
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_path
+else:
+    raise EnvironmentError("GOOGLE_SERVICE_ACCOUNT_JSON environment variable not set!")
+
+# ------------------ PERSON NAME EXTRACTOR ------------------
 def extract_person_names(text):
+    """
+    Extracts the most relevant person name from text using Google Cloud NLP API.
+    Filters out generic terms like 'driver' or 'safe'.
+    Prioritizes names based on salience and truncates long names to 3 words max.
+    """
     client = language_v1.LanguageServiceClient()
 
     document = language_v1.Document(
@@ -14,31 +31,17 @@ def extract_person_names(text):
 
     response = client.analyze_entities(document=document)
 
-    person_names = "any_name"
-    salience_score = 0
+    person_name = "any_name"  # default fallback
+    top_salience = 0.0
 
-    # Iterate through entities and extract person names
     for entity in response.entities:
         if language_v1.Entity.Type(entity.type_) == language_v1.Entity.Type.PERSON:
-            # Check if the entity name is not 'DRIVER' or 'SAFE' and has a higher salience score
-            if entity.salience > salience_score and entity.name.lower() not in ['driver', 'safe']:
-                name_words = entity.name.split()
-                # Check if the name has more than three words
-                if len(name_words) > 3:
-                    # Truncate the name to the first three words
-                    truncated_name = ' '.join(name_words[:3])
-                    person_names = truncated_name
-                elif len(name_words)>1:
-                    person_names = entity.name
+            if entity.salience > top_salience and entity.name.lower() not in ['driver', 'safe']:
+                words = entity.name.split()
+                if len(words) > 3:
+                    person_name = ' '.join(words[:3])
+                else:
+                    person_name = entity.name
+                top_salience = entity.salience
 
-
-                salience_score = entity.salience
-                
-
-    return person_names
-
-# # Example usage
-# text = "KEIRA CHRISTINA KNIGHTLEY 10405 SW 112TH ST MIAMI was the 44th president of the United States. Elon Musk founded SpaceX and co-founded Tesla. John Doe the Driver was on duty. Jane Alice Smith Brown is a scientist."
-# # person_name = extract_person_names(text)
-
-# print("Person with highest salience score:", person_name)
+    return person_name
