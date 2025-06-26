@@ -28,12 +28,13 @@ def extract_text_and_generate_csv(image_path):
     try:
         client = setup_google_vision_client()
 
-        # Load the image
+        # Load image and preprocess
         image = cv2.imread(image_path)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        binary = cv2.adaptiveThreshold(~gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, -2)
+        binary = cv2.adaptiveThreshold(~gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+                                       cv2.THRESH_BINARY, 15, -2)
 
-        # Horizontal and vertical line detection
+        # Detect horizontal and vertical lines
         scale = 20
         horizontal = binary.copy()
         vertical = binary.copy()
@@ -48,50 +49,68 @@ def extract_text_and_generate_csv(image_path):
         vertical = cv2.erode(vertical, verticalStructure)
         vertical = cv2.dilate(vertical, verticalStructure)
 
-        # Combine masks and find contours
+        # Combine lines and find contours
         mask = cv2.add(horizontal, vertical)
         mask = cv2.dilate(mask, np.ones((3, 3), np.uint8))
-        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        cell_data = []
-        for contour in contours:
-            x, y, w, h = cv2.boundingRect(contour)
-            if w > 50 and h > 20:
-                cell = image[y:y + h, x:x + w]
-                _, encoded_image = cv2.imencode('.jpg', cell)
+        boxes = [cv2.boundingRect(cnt) for cnt in contours
+                 if cv2.boundingRect(cnt)[2] > 50 and cv2.boundingRect(cnt)[3] > 20]
+
+        # Sort by Y (top to bottom), then X (left to right)
+        boxes = sorted(boxes, key=lambda b: (b[1], b[0]))
+
+        # Group boxes into rows
+        rows = []
+        row_threshold = 10  # pixels
+        for box in boxes:
+            x, y, w, h = box
+            added = False
+            for row in rows:
+                if abs(row[0][1] - y) < row_threshold:
+                    row.append(box)
+                    added = True
+                    break
+            if not added:
+                rows.append([box])
+
+        # Sort each row left to right
+        for row in rows:
+            row.sort(key=lambda b: b[0])
+
+        # Extract text from each cell using Vision API
+        table_data = []
+        for row in rows:
+            row_data = []
+            for x, y, w, h in row:
+                cell_img = image[y:y+h, x:x+w]
+                _, encoded_image = cv2.imencode('.jpg', cell_img)
                 content = encoded_image.tobytes()
                 vision_image = vision.Image(content=content)
                 response = client.text_detection(image=vision_image)
                 texts = response.text_annotations
-                text = texts[0].description.strip() if texts else ""
-                cell_data.append((x, y, text))
+                text = texts[0].description.strip().replace('\n', ' ') if texts else ""
+                row_data.append(text)
+            table_data.append(row_data)
 
-        # Sort and write CSV
-        cell_data.sort(key=lambda item: (item[1], item[0]))
-        image_folder = os.path.dirname(image_path)
-        output_dir = os.path.join(image_folder, 'outputcsv')
+        # Save output to CSV
+        output_dir = os.path.join(os.path.dirname(image_path), 'outputcsv')
         os.makedirs(output_dir, exist_ok=True)
+        output_csv_path = os.path.join(output_dir, os.path.splitext(os.path.basename(image_path))[0] + '_output.csv')
 
-        csv_filename = os.path.splitext(os.path.basename(image_path))[0] + '_output.csv'
-        output_csv_path = os.path.join(output_dir, csv_filename)
-
-        with open(output_csv_path, 'w', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
-            current_row = []
-            previous_y = cell_data[0][1] if cell_data else 0
-
-            for x, y, text in cell_data:
-                if abs(y - previous_y) > 10:
-                    writer.writerow(current_row)
-                    current_row = []
-                    previous_y = y
-                current_row.append(text)
-            if current_row:
-                writer.writerow(current_row)
+        with open(output_csv_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerows(table_data)
 
         print(f"✅ CSV saved at: {output_csv_path}")
         return output_csv_path
 
     except Exception as e:
-        print(f"❌ Failed to process image and generate CSV: {e}")
+        print(f"❌ Error during table extraction: {e}")
         return None
+
+# ------------------ Example Usage ------------------
+
+# if __name__ == "__main__":
+#     path = "your_table_image.png"
+#     extract_text_and_generate_csv(path)
