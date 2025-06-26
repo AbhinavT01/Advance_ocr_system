@@ -60,4 +60,4 @@ if __name__ == "__main__":
     image_path = "./images1.jpg"  # Change to your actual test image path
     result = detect_document_text(image_path)
     print("\n--- Result ---\n")
-    print(result) in this also 
+    
