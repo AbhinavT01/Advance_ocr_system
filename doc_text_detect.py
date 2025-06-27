@@ -25,13 +25,3 @@ def detect_document_text(image_path):
 
     if response.error.message:
         raise Exception(f'{response.error.message}')
-
-if __name__ == "__main__":
-    # Set the path to your service account key
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './myservicegapi.json'
-    
-    # Path to the image file
-    # image_path = './images.png'
-    
-    # Detect document text
-    # detect_document_text(image_path)
