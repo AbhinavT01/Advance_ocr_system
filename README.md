@@ -2,7 +2,15 @@
 
 ## ** Advance  OCR System**
 
-This repository houses an advanced OCR system that excels in detecting and extracting text, autofilling extracted information into specified fields, and accurately identifying documents with paragraphs and handwritten content. It also robustly detects tabular data, whether handwritten or digital, enhancing its versatility in document processing." The results are then displayed on a Flask web server.
+This repository features an advanced OCR system designed for high-accuracy text detection and extraction. It intelligently autofills extracted information into designated fields and effectively recognizes documents containing both paragraphs and handwritten content. Additionally, it offers robust detection of tabular data—whether handwritten or digital—making it highly versatile for comprehensive document processing. All results are seamlessly displayed via a Flask-based web interface.
+
+
+### Working Link
+- **Click on the link to go to Project :**
+   ```sh
+  https://advance-ocr-system.onrender.com
+
+
 
 ### Table of Contents
 
@@ -21,8 +29,8 @@ This repository houses an advanced OCR system that excels in detecting and extra
 
 - **Clone the repository:**
   ```sh
-  git clone https://github.com/AbhinavT01/ADVANCE-OCR-SYSTEM.git
-  cd ADVANCE-OCR-SYSTEM
+  git clone https://github.com/AbhinavT01/Advance_Ocr_System.git
+  cd Advance_Ocr_System
 
 
 
@@ -39,7 +47,7 @@ This repository houses an advanced OCR system that excels in detecting and extra
 
  -  **Start the Flask web application:**
       ```sh
-        python app.py
+        python app.py or flask run(first set)
 -  Open your web browser and navigate to http://127.0.0.1:5000/.
 -  Upload a document to be processed and view the results on the result page.
 
