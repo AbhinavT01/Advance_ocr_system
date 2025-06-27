@@ -82,17 +82,14 @@ def upload_bank():
     if file:
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
-
-        # Process the image
-       # ✅ Setup Google clients
-             vision_client = setup_google_vision_client()
-             nlp_client = setup_google_nlp_client()
+        vision_client = setup_google_vision_client()
+        nlp_client = setup_google_nlp_client()
 
             # ✅ Extract text using OCR
-            text = extract_text_from_image(file_path, vision_client)
+        text = extract_text_from_image(file_path, vision_client)
 
             # ✅ Extract structured info
-            processed_text = extract_info(text, nlp_client)
+        processed_text = extract_info(text, nlp_client)
         
         return render_template('resultbank.html', result=processed_text)
 
