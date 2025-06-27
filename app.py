@@ -1,5 +1,8 @@
 from flask import Flask, request, render_template, send_from_directory, jsonify, url_for
+
 import os
+
+from google.cloud import language_v1
 from main import main_file
 from card_detect import extract_info
 from card_detect import extract_text_from_image
@@ -81,8 +84,11 @@ def upload_bank():
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
 
-        # Process the image
-        processed_text = extract_info(file_path)
+        nlp_client = language_v1.LanguageServiceClient()
+
+        # Pass it to extract_info
+        text =extract_text_from_image(file_path)
+        processed_text = extract_info(text, nlp_client)
         
         return render_template('resultbank.html', result=processed_text)
 
