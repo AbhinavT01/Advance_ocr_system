@@ -85,8 +85,8 @@ def upload_bank():
 
         # Process the image
        # ✅ Setup Google clients
-            vision_client = setup_google_vision_client()
-            nlp_client = setup_google_nlp_client()
+             vision_client = setup_google_vision_client()
+             nlp_client = setup_google_nlp_client()
 
             # ✅ Extract text using OCR
             text = extract_text_from_image(file_path, vision_client)
